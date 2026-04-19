@@ -1,141 +1,302 @@
 
-<style>
-    .wa-float {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: #25d366;
-        color: #FFF;
-        border-radius: 50px;
-        text-align: center;
-        font-size: 30px;
-        box-shadow: 2px 2px 3px #999;
-        z-index: 3000;
-        padding: 10px 20px;
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        font-family: Arial;
-        font-weight: bold;
-    }
-    .wa-float i { font-size: 35px; margin-right: 10px; }
-    .wa-float:hover { background-color: #128c7e; transform: scale(1.1); color: white; }
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝐃𝐑𝐀𝐆𝐎𝐍 𝐂𝐎𝐑𝐄 𝐕𝐏𝐍 | Professional Vault</title>
     
-    .profile-alert {
-        background: rgba(255, 0, 60, 0.1);
-        border: 1px solid var(--core-red);
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-</style>
-
-<a href="https://wa.me/94755751816" class="wa-float" target="_blank">
-    <i class="fab fa-whatsapp"></i> <span style="font-size: 14px;">NEED HELP?</span>
-</a>
-
-<script>
-    emailjs.init("aop4SIq1OjHZn_EW7"); 
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAqX2abIZOxSTIhneLuxHqsMl66l9cGAVo",
-        authDomain: "dragon-core-vpn.firebaseapp.com",
-        databaseURL: "https://dragon-core-vpn-default-rtdb.firebaseio.com",
-        projectId: "dragon-core-vpn",
-        storageBucket: "dragon-core-vpn.firebasestorage.app",
-        messagingSenderId: "114225209703",
-        appId: "1:114225209703:web:4c2b9611511e892db9cfc2"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
-    let currentUser = null;
-    let isFollowingChannel = localStorage.getItem('wa_followed') === 'true';
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --core-red: #ff003c; --core-gold: #ffd700; --dark-bg: #030303; --glass: rgba(15,15,15,0.95); }
+        * { box-sizing: border-box; transition: 0.3s; cursor: crosshair; }
+        body { background: var(--dark-bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; min-height: 100vh; overflow-x: hidden; }
 
-    function followAndUnlock() {
-        window.open("https://whatsapp.com/channel/0029VbCDohz9hXFA3hOsQM0N", "_blank");
-        localStorage.setItem('wa_followed', 'true');
-        isFollowingChannel = true;
-        setTimeout(() => { location.reload(); }, 2000);
-    }
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.15; }
 
-    function loadVault() {
-        db.ref('vault_data').on('value', s => {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = "";
-            
-            // Profile Update Reminder Logic
-            if(currentUser && !localStorage.getItem('profile_synced')) {
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'profile-alert';
-                alertDiv.innerHTML = `
-                    <span style="font-size:13px; color:var(--core-gold);">⚠️ PLEASE UPDATE YOUR WHATSAPP DETAILS TO SYNC YOUR ACCOUNT!</span>
-                    <button class="btn-action" style="width:auto; padding:5px 15px;" onclick="openProfile()">UPDATE NOW</button>
-                `;
-                grid.parentElement.insertBefore(alertDiv, grid);
-            }
+        nav { padding: 15px 25px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--core-red); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .welcome-tag { font-size: 14px; font-weight: bold; color: var(--core-gold); }
 
-            const data = s.val() || {};
-            let freeCount = 0;
-            let totalData = Object.keys(data).map(key => ({id: key, ...data[key]}));
+        .hero-section { padding: 60px 20px; text-align: center; }
+        .main-logo-container { position: relative; display: inline-block; animation: pulse 2s infinite; }
+        .main-logo-container i { font-size: 120px; color: var(--core-red); text-shadow: 0 0 30px var(--core-red); }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
 
-            totalData.forEach(v => {
-                if(v.type === 'PREMIUM' && (!currentUser || currentUser.type !== 'PREMIUM' && currentUser.email !== 'kaviakiya@gmail.com')) return;
-                if(v.type === 'FREE') {
-                    freeCount++;
-                    if(freeCount > 10 && !isFollowingChannel) return;
-                }
+        .info-box { max-width: 900px; margin: 20px auto; padding: 25px; background: rgba(20,20,20,0.8); border-radius: 15px; border: 1px solid #222; text-align: left; line-height: 1.6; }
+        .lang-tab { margin-bottom: 15px; border-left: 4px solid var(--core-red); padding-left: 15px; }
 
-                grid.innerHTML += `
-                    <div class="card ${v.type==='PREMIUM'?'premium-card':''}">
-                        <img src="https://flagcdn.com/w40/${v.flag}.png" class="flag-icon">
-                        <span style="font-size:12px; color:#555;">${v.type} SERVER</span>
-                        <h3 style="margin:10px 0;">${v.name}</h3>
-                        <button class="btn-action" onclick="navigator.clipboard.writeText('${v.url}'); alert('Config Copied!');">COPY CONFIG</button>
-                    </div>
-                `;
+        .container { max-width: 1200px; margin: auto; padding: 20px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 25px; border-radius: 20px; position: relative; overflow: hidden; }
+        .card::before { content: ""; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--core-red); }
+        .card.premium-card::before { background: var(--core-gold); }
+
+        /* Profile Alert Style */
+        .profile-alert { background: rgba(255, 0, 60, 0.15); border: 1px solid var(--core-red); padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; animation: slideDown 0.5s ease; }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Floating WhatsApp Button */
+        .wa-float { position: fixed; bottom: 30px; right: 30px; background: #25d366; color: white; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; z-index: 3000; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .wa-float:hover { transform: scale(1.1); background: #128c7e; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
+        .modal-content { background: #0a0a0a; border: 1px solid var(--core-red); width: 100%; max-width: 500px; padding: 40px; border-radius: 30px; text-align: center; }
+        .profile-pic-large { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--core-red); margin-bottom: 20px; object-fit: cover; }
+
+        input, select { width: 100%; padding: 14px; margin-bottom: 15px; background: #000; color: white; border: 1px solid #333; border-radius: 10px; }
+        .btn-action { width: 100%; padding: 14px; background: transparent; border: 2px solid var(--core-red); color: white; font-weight: bold; border-radius: 10px; cursor: pointer; }
+        .btn-action:hover { background: var(--core-red); box-shadow: 0 0 20px var(--core-red); }
+
+        footer { background: #000; padding: 30px; text-align: center; border-top: 1px solid #111; font-size: 12px; color: #666; }
+        .flag-icon { width: 25px; vertical-align: middle; margin-right: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <div class="nav-left">
+            <i class="fas fa-dragon" style="color:var(--core-red); font-size:24px;"></i>
+            <span id="user-greeting" class="welcome-tag" style="margin-left:15px;">WELCOME, GUEST</span>
+        </div>
+        <div id="user-ctrl">
+            <button class="btn-action" style="padding:8px 20px;" onclick="showLogin()">LOGIN</button>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="main-logo-container">
+            <i class="fas fa-dragon"></i>
+        </div>
+        <h1 style="letter-spacing:5px; margin-top:20px;">DRAGON CORE <span style="color:var(--core-red)">VPN</span></h1>
+        <p style="color:#888;">THE ULTIMATE CONFIGURATION VAULT</p>
+    </div>
+
+    <div class="container">
+        <div id="p-reminder-box"></div>
+
+        <div class="info-box">
+            <div class="lang-tab"><strong>ENGLISH:</strong> A VPN secures your connection and bypasses filters.</div>
+            <div class="lang-tab"><strong>සිංහල:</strong> VPN එකක් මගින් ඔබේ අන්තර්ජාල සබඳතාවය ආරක්ෂිත කරන අතර අවහිර කළ වෙබ් අඩවි වලට පිවිසීමට ඉඩ සලසයි.</div>
+        </div>
+
+        <div id="admin-box" style="display:none; background:rgba(255,0,0,0.05); padding:30px; border-radius:20px; border:2px dashed var(--core-red); margin: 40px auto; max-width:600px;">
+            <h2 style="color:var(--core-red);">🐲 COMMAND CENTER</h2>
+            <input type="text" id="c-name" placeholder="Server Name">
+            <input type="text" id="c-flag" placeholder="Country Code (us, sg, sl)">
+            <input type="text" id="c-url" placeholder="Config URL">
+            <select id="c-type">
+                <option value="FREE">FREE SERVER</option>
+                <option value="PREMIUM">PREMIUM SERVER</option>
+            </select>
+            <button class="btn-action" onclick="pushData()">PUBLISH TO VAULT</button>
+        </div>
+
+        <div class="grid" id="main-grid"></div>
+    </div>
+
+    <a href="https://wa.me/94755751816" class="wa-float" target="_blank">
+        <i class="fab fa-whatsapp"></i> NEED HELP?
+    </a>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color:var(--core-red);">ACCESS PORTAL</h2>
+            <button class="btn-action" onclick="loginWithGoogle()"><i class="fab fa-google"></i> GOOGLE LOGIN</button>
+            <div style="margin:20px 0; color: #444;">OR PREMIUM</div>
+            <input type="text" id="p-user" placeholder="Premium User">
+            <input type="password" id="p-pass" placeholder="Password">
+            <button class="btn-action" style="border-color:var(--core-gold); color:var(--core-gold);" onclick="loginPremium()">PREMIUM LOGIN</button>
+            <p onclick="closeModal()" style="margin-top:20px; cursor:pointer; color:#666;">CLOSE</p>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal">
+        <div class="modal-content" style="border-color: var(--core-gold);">
+            <img id="p-display-img" class="profile-pic-large" src="">
+            <h2 id="p-display-name" style="color:var(--core-gold); margin:0;"></h2>
+            <p id="p-display-email" style="color:#666; font-size:12px; margin-bottom:20px;"></p>
+            <form id="profile-update-form">
+                <input type="text" id="up-name" placeholder="Real Name" required>
+                <input type="text" id="up-wa" placeholder="WhatsApp Number" required>
+                <input type="text" id="up-img" placeholder="Custom DP URL (Optional)">
+                <button type="submit" class="btn-action">SAVE & SYNC TO CLOUD</button>
+            </form>
+            <button class="btn-action" style="border-color:#444; color:#888; margin-top:10px;" onclick="logout()">LOGOUT</button>
+            <p onclick="closeModal()" style="margin-top:15px; cursor:pointer; color:#444;">CLOSE</p>
+        </div>
+    </div>
+
+    <footer>
+        ALL RIGHTS RESERVED 2026 | POWERED BY <span style="color:var(--core-red); font-weight:bold;">AKIYA-MD</span>
+        <br><span onclick="checkAdminGate()" style="opacity:0.1; cursor:pointer;">ADMIN_LOGIN</span>
+    </footer>
+
+    <script>
+        // --- EMAILJS INIT ---
+        emailjs.init("aop4SIq1OjHZn_EW7");
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqX2abIZOxSTIhneLuxHqsMl66l9cGAVo",
+            authDomain: "dragon-core-vpn.firebaseapp.com",
+            databaseURL: "https://dragon-core-vpn-default-rtdb.firebaseio.com",
+            projectId: "dragon-core-vpn",
+            storageBucket: "dragon-core-vpn.firebasestorage.app",
+            messagingSenderId: "114225209703",
+            appId: "1:114225209703:web:4c2b9611511e892db9cfc2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let currentUser = null;
+        let isFollowingChannel = localStorage.getItem('wa_followed') === 'true';
+
+        function showLogin() { document.getElementById('login-modal').style.display='flex'; }
+        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(res => {
+                saveSession(res.user.displayName, res.user.email, res.user.photoURL, "GOOGLE");
             });
+        }
 
-            if(!isFollowingChannel) {
-                grid.innerHTML += `
-                    <div class="card" style="border: 2px dashed #25D366; background: rgba(37, 211, 102, 0.05);">
-                        <i class="fab fa-whatsapp" style="font-size:40px; color:#25D366;"></i>
-                        <h3>UNLOCK 20+ FREE CONFIGS</h3>
-                        <p style="font-size:12px; color:#888;">Follow our WhatsApp channel to unlock more servers!</p>
-                        <button class="btn-action" style="border-color:#25D366; color:#25D366;" onclick="followAndUnlock()">FOLLOW TO UNLOCK</button>
-                    </div>
-                `;
+        function loginPremium() {
+            const u = document.getElementById('p-user').value;
+            if(document.getElementById('p-pass').value.startsWith("pass_akiya")) {
+                saveSession(u, u + "@premium.com", "https://cdn-icons-png.flaticon.com/512/1458/1458201.png", "PREMIUM");
+            } else { alert("Invalid Credentials!"); }
+        }
+
+        function saveSession(name, email, img, type) {
+            currentUser = { name, email, img, type };
+            localStorage.setItem('dragon_session', JSON.stringify(currentUser));
+            location.reload();
+        }
+
+        function checkSession() {
+            const session = JSON.parse(localStorage.getItem('dragon_session'));
+            if(session) {
+                currentUser = session;
+                document.getElementById('user-greeting').innerText = `HY, ${session.name.split(' ')[0].toUpperCase()}`;
+                document.getElementById('user-ctrl').innerHTML = `<img src="${session.img}" onclick="openProfile()" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--core-red); cursor:pointer;">`;
+                document.getElementById('p-display-img').src = session.img;
+                document.getElementById('p-display-name').innerText = session.name;
+                document.getElementById('p-display-email').innerText = session.email;
             }
-        });
-    }
+            loadVault();
+        }
 
-   
-    document.getElementById('profile-update-form').onsubmit = (e) => {
-        e.preventDefault();
-        const newName = document.getElementById('up-name').value;
-        const wa = document.getElementById('up-wa').value;
-        const updateData = {
-            from_name: currentUser.name,
-            from_email: currentUser.email,
-            real_name: newName,
-            whatsapp: wa,
-            account_type: currentUser.type
+        function openProfile() { document.getElementById('profile-modal').style.display='flex'; }
+
+        document.getElementById('profile-update-form').onsubmit = (e) => {
+            e.preventDefault();
+            const data = {
+                real_name: document.getElementById('up-name').value,
+                whatsapp: document.getElementById('up-wa').value,
+                from_email: currentUser.email,
+                account_type: currentUser.type
+            };
+
+            emailjs.send("service_n39hgjv", "template_09uim2o", data).then(() => {
+                localStorage.setItem('profile_synced', 'true');
+                currentUser.name = data.real_name;
+                localStorage.setItem('dragon_session', JSON.stringify(currentUser));
+                alert("Profile Synced Successfully!");
+                location.reload();
+            });
         };
 
-        emailjs.send("service_n39hgjv", "template_09uim2o", updateData)
-        .then(() => {
-            localStorage.setItem('profile_synced', 'true'); ේ
-            currentUser.name = newName;
-            localStorage.setItem('dragon_session', JSON.stringify(currentUser));
-            alert("Profile Saved & Synced!");
-            location.reload();
-        });
-    };
+        function loadVault() {
+            db.ref('vault_data').on('value', s => {
+                const grid = document.getElementById('main-grid');
+                const reminder = document.getElementById('p-reminder-box');
+                grid.innerHTML = "";
+                
+                if(currentUser && !localStorage.getItem('profile_synced')) {
+                    reminder.innerHTML = `
+                        <div class="profile-alert">
+                            <span style="font-size:13px; color:var(--core-gold);">⚠️ UPDATE YOUR PROFILE TO SYNC WITH ADMIN!</span>
+                            <button class="btn-action" style="width:auto; padding:5px 15px;" onclick="openProfile()">UPDATE</button>
+                        </div>`;
+                }
 
-    window.onload = () => {
-        checkSession();
-    };
-</script>
+                const data = s.val() || {};
+                let freeCount = 0;
+                for(let key in data) {
+                    let v = data[key];
+                    if(v.type === 'PREMIUM' && (!currentUser || currentUser.type !== 'PREMIUM')) continue;
+                    if(v.type === 'FREE') {
+                        freeCount++;
+                        if(freeCount > 10 && !isFollowingChannel) continue;
+                    }
+                    grid.innerHTML += `
+                        <div class="card ${v.type==='PREMIUM'?'premium-card':''}">
+                            <img src="https://flagcdn.com/w40/${v.flag}.png" class="flag-icon">
+                            <span style="font-size:10px; color:#555;">${v.type} SERVER</span>
+                            <h3 style="margin:10px 0;">${v.name}</h3>
+                            <button class="btn-action" onclick="navigator.clipboard.writeText('${v.url}'); alert('Copied!');">COPY CONFIG</button>
+                        </div>`;
+                }
+
+                if(!isFollowingChannel) {
+                    grid.innerHTML += `
+                        <div class="card" style="border: 2px dashed #25D366;">
+                            <i class="fab fa-whatsapp" style="font-size:40px; color:#25D366; margin-bottom:10px;"></i>
+                            <h3>UNLOCK 20+ FREE CONFIGS</h3>
+                            <button class="btn-action" style="border-color:#25D366; color:#25D366;" onclick="followWA()">FOLLOW CHANNEL</button>
+                        </div>`;
+                }
+            });
+        }
+
+        function followWA() {
+            window.open("https://whatsapp.com/channel/0029VbCDohz9hXFA3hOsQM0N", "_blank");
+            localStorage.setItem('wa_followed', 'true');
+            setTimeout(() => location.reload(), 2000);
+        }
+
+        function checkAdminGate() {
+            if(currentUser?.email === "kaviakiya@gmail.com") {
+                if(prompt("ADMIN KEY:") === "dragon@akiya26") document.getElementById('admin-box').style.display='block';
+            } else { alert("Access Denied!"); }
+        }
+
+        function pushData() {
+            db.ref('vault_data').push({
+                name: document.getElementById('c-name').value,
+                flag: document.getElementById('c-flag').value.toLowerCase(),
+                url: document.getElementById('c-url').value,
+                type: document.getElementById('c-type').value
+            });
+            alert("Published!");
+        }
+
+        function logout() { localStorage.removeItem('dragon_session'); location.reload(); }
+
+        window.onload = checkSession;
+
+        // Bg Animation
+        const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const pts = [];
+        for(let i=0; i<60; i++) pts.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, s:Math.random()*2});
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="#ff003c";
+            pts.forEach(p => {
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill();
+                p.y -= 0.3; if(p.y < 0) p.y = canvas.height;
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
