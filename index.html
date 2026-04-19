@@ -139,6 +139,35 @@
 
     <script>
        
+function injectBulkConfigs() {
+    const configs = [];
+    
+   
+    for(let i=1; i<=30; i++) {
+        configs.push({
+            name: `DRAGON PREMIUM SERVER ${i}`,
+            flag: 'sg', 
+            url: `trojan://akiya_premium_${i}@dragon-core-srv${i}.pro:443?security=tls&sni=m.youtube.com#PREMIUM-SRV-${i}`,
+            type: 'PREMIUM'
+        });
+    }
+    
+    for(let i=1; i<=30; i++) {
+        configs.push({
+            name: `DRAGON FREE SERVER ${i}`,
+            flag: 'us', 
+            url: `trojan://akiya_free_${i}@free-srv${i}.dragon.net:443?security=tls&sni=google.com#FREE-SRV-${i}`,
+            type: 'FREE'
+        });
+    }
+
+   
+    configs.forEach(c => {
+        firebase.database().ref('vault_data').push(c);
+    });
+    alert("සියලුම Configs 60 සාර්ථකව ඇතුළත් කළා!");
+}
+       
         emailjs.init("aop4SIq1OjHZn_EW7");
 
         const firebaseConfig = {
