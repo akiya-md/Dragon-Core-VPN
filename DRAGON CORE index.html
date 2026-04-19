@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝐃𝐑𝐀𝐆𝐎𝐍 𝐂𝐎𝐑𝐄 𝐕𝐏𝐍 | Ultimate Vault</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --core-red: #ff003c; --core-gold: #ffd700; --dark-bg: #030303; }
+        * { box-sizing: border-box; cursor: crosshair; transition: 0.3s; }
+        body { background: var(--dark-bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.15; }
+
+        /* --- AUTH SCREEN --- */
+        #auth-screen { position: fixed; inset: 0; background: black; z-index: 10000; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .auth-card { background: rgba(10,10,10,0.95); border: 1px solid var(--core-red); padding: 50px; border-radius: 25px; box-shadow: 0 0 40px rgba(255,0,60,0.4); width: 90%; max-width: 400px; }
+        
+        /* --- MAIN SITE --- */
+        #main-site { display: none; }
+        nav { padding: 15px 25px; background: rgba(0,0,0,0.95); border-bottom: 2px solid var(--core-red); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-weight: 900; color: var(--core-red); font-size: 1.4rem; text-shadow: 0 0 10px var(--core-red); }
+        .user-info { display: flex; align-items: center; gap: 10px; font-size: 11px; }
+        .user-img { width: 30px; border-radius: 50%; border: 1px solid var(--core-red); }
+
+        .hero { text-align: center; padding: 60px 20px; background: radial-gradient(circle, #220000 0%, transparent 70%); }
+        
+        .tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 35px; }
+        .tab-btn { padding: 12px 25px; background: #080808; border: 1px solid #222; color: #555; border-radius: 50px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .tab-btn.active { border-color: var(--core-red); color: var(--core-red); box-shadow: 0 0 15px rgba(255,0,60,0.3); }
+
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 25px; border-radius: 15px; position: relative; }
+        .card:hover { border-color: var(--core-red); transform: translateY(-8px); }
+        .badge { position: absolute; top: 15px; right: 15px; font-size: 8px; font-weight: 900; padding: 4px 10px; border-radius: 4px; }
+
+        .btn-action { display: block; width: 100%; padding: 12px; margin-top: 20px; background: transparent; border: 1px solid var(--core-red); color: var(--core-red); text-align: center; text-decoration: none; font-weight: bold; font-size: 11px; border-radius: 8px; }
+        .btn-action:hover { background: var(--core-red); color: white; box-shadow: 0 0 20px var(--core-red); }
+
+        #admin-section { display: none; background: #070707; border: 1px dashed var(--core-gold); padding: 30px; border-radius: 20px; margin-bottom: 50px; }
+        .admin-input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; margin-bottom: 12px; border-radius: 8px; }
+
+        footer { text-align: center; padding: 60px; color: #222; font-size: 9px; border-top: 1px solid #0a0a0a; }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <i class="fas fa-dragon" style="color: var(--core-red); font-size: 60px; margin-bottom: 25px;"></i>
+            <h1 style="letter-spacing: 5px; margin-bottom: 10px;">DRAGON CORE</h1>
+            <p style="color: #444; font-size: 11px; margin-bottom: 30px;">GOOGLE SIGN-IN REQUIRED FOR ACCESS.</p>
+            <button onclick="loginWithGoogle()" class="btn-action" style="background: white; color: black; border: none; font-size: 13px;">
+                <i class="fab fa-google"></i> SIGN IN WITH GOOGLE
+            </button>
+        </div>
+    </div>
+
+    <div id="main-site">
+        <nav>
+            <div class="logo">DRAGON <span style="color:white">CORE</span></div>
+            <div class="user-info" id="user-display"></div>
+        </nav>
+
+        <section class="hero">
+            <h2 style="font-size: 40px; margin: 0;">ULTIMATE VAULT</h2>
+            <p style="color: var(--core-gold); font-size: 11px; font-weight: bold; letter-spacing: 3px;">7-DAY AUTO REFRESH ACTIVE</p>
+        </section>
+
+        <div class="container">
+            <div id="admin-section">
+                <h3 style="color: var(--core-gold); margin-bottom: 20px;">🐲 CORE COMMAND CENTER</h3>
+                <input type="text" id="c-name" class="admin-input" placeholder="Config Name (e.g. Dialog Unlimited)">
+                <input type="text" id="c-info" class="admin-input" placeholder="Short Desc (e.g. NetMod / 7D)">
+                <input type="text" id="c-url" class="admin-input" placeholder="Download Link">
+                <select id="c-dev" class="admin-input">
+                    <option value="PC">FOR PC / WINDOWS</option>
+                    <option value="MOBILE">FOR MOBILE / ANDROID</option>
+                </select>
+                <button class="btn-action" style="border-color: var(--core-gold); color: var(--core-gold);" onclick="pushData()">UPDATE DATABASE</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="setTab('ALL', this)">ALL RESOURCES</button>
+                <button class="tab-btn" onclick="setTab('MOBILE', this)">MOBILE</button>
+                <button class="tab-btn" onclick="setTab('PC', this)">PC / WINDOWS</button>
+            </div>
+
+            <div class="grid" id="vault-grid"></div>
+        </div>
+
+        <footer>
+            <p>DRAGON CORE VPN v3.9 | CORE SYSTEM BY AKIYA</p>
+            <p onclick="adminGate()" style="cursor:pointer">SYSTEM_ACCESS_KEY</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Updated with your actual Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqX2abIZOxSTIhneLuxHqsMl66l9cGAVo",
+            authDomain: "dragon-core-vpn.firebaseapp.com",
+            databaseURL: "https://dragon-core-vpn-default-rtdb.firebaseio.com",
+            projectId: "dragon-core-vpn",
+            storageBucket: "dragon-core-vpn.firebasestorage.app",
+            messagingSenderId: "114225209703",
+            appId: "1:114225209703:web:4c2b9611511e892db9cfc2"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+        
+        const ADMIN_EMAIL = "kaviakiya@gmail.com";
+        const ADMIN_PASS = "dragon@akiya26"; 
+        let currentTab = "ALL";
+
+        function loginWithGoogle() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then((result) => {
+                const user = result.user;
+                const userData = {
+                    name: user.displayName,
+                    email: user.email,
+                    picture: user.photoURL
+                };
+                localStorage.setItem('dragon_user', JSON.stringify(userData));
+                renderSite();
+            }).catch((error) => {
+                alert("Login Error: " + error.message);
+            });
+        }
+
+        function renderSite() {
+            const userData = localStorage.getItem('dragon_user');
+            if(userData) {
+                const user = JSON.parse(userData);
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-site').style.display = 'block';
+                document.getElementById('user-display').innerHTML = `
+                    <span>${user.name}</span>
+                    <img src="${user.picture}" class="user-img">
+                    <span onclick="logout()" style="color:red; cursor:pointer; margin-left:10px;">EXIT</span>
+                `;
+                loadVault();
+            }
+        }
+
+        function adminGate() {
+            const user = JSON.parse(localStorage.getItem('dragon_user'));
+            if(user && user.email === ADMIN_EMAIL) {
+                if(prompt("ENTER CORE ACCESS KEY:") === ADMIN_PASS) {
+                    document.getElementById('admin-section').style.display = 'block';
+                }
+            } else { alert("ACCESS DENIED: ADMIN PRIVILEGES REQUIRED."); }
+        }
+
+        function pushData() {
+            const obj = {
+                name: document.getElementById('c-name').value,
+                info: document.getElementById('c-info').value,
+                url: document.getElementById('c-url').value,
+                dev: document.getElementById('c-dev').value,
+                ts: new Date().getTime()
+            };
+            db.ref('vault_data').push(obj);
+            alert("Vault Updated Successfully!");
+            document.getElementById('c-name').value = "";
+            document.getElementById('c-info').value = "";
+            document.getElementById('c-url').value = "";
+        }
+
+        function loadVault() {
+            db.ref('vault_data').on('value', s => {
+                const data = s.val();
+                const grid = document.getElementById('vault-grid');
+                grid.innerHTML = "";
+                if(!data) return;
+                for(let key in data) {
+                    let v = data[key];
+                    if(currentTab === "ALL" || v.dev === currentTab) {
+                        grid.innerHTML += `
+                            <div class="card">
+                                <span class="badge" style="background:${v.dev==='PC'?'#00ff41':'#0088ff'}; color:black;">${v.dev}</span>
+                                <h3 style="margin:0 0 10px 0; font-size:16px;">${v.name}</h3>
+                                <p style="font-size:11px; color:#555;">${v.info}</p>
+                                <a href="${v.url}" class="btn-action" target="_blank">DECRYPT & DOWNLOAD</a>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+
+        function setTab(t, btn) {
+            currentTab = t;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadVault();
+        }
+
+        function logout() { 
+            auth.signOut();
+            localStorage.clear(); 
+            location.reload(); 
+        }
+
+        window.onload = renderSite;
+
+        // Background Particles
+        const c = document.getElementById('bg-canvas'), x = c.getContext('2d');
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        const pts = [];
+        for(let i=0; i<80; i++) pts.push({x:Math.random()*c.width, y:Math.random()*c.height, v:Math.random()*0.5});
+        function draw() {
+            x.clearRect(0,0,c.width,c.height); x.fillStyle="#ff003c";
+            pts.forEach(i => { x.beginPath(); x.arc(i.x, i.y, 1.2, 0, 7); x.fill(); i.y -= i.v; if(i.y<0) i.y=c.height; });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>
