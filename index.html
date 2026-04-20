@@ -9,16 +9,14 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
-        /* මුළු සයිට් එකේම පෙනුම මෙතනින් වෙනස් කරනවා */
         body { 
             background: #000; 
-            color: #ff0000; /* රතු පාට */
+            color: #ff0000; 
             font-family: 'Courier New', monospace; 
             margin: 0; 
             overflow-x: hidden; 
         }
 
-        /* ලොගින් බොක්ස් එකේ පෙනුම */
         .container { display: flex; justify-content: center; align-items: center; height: 100vh; }
         #login-box { 
             border: 2px solid #ff0000; 
@@ -41,7 +39,6 @@
         }
         button:hover { background: #fff; color: #ff0000; box-shadow: 0 0 20px #fff; }
 
-        /* Dashboard එකේ පෙනුම */
         #dashboard { display: none; padding: 20px; box-sizing: border-box; min-height: 100vh; }
         
         .header { 
@@ -57,7 +54,6 @@
             position: relative;
         }
 
-        /* අර උඩින් යන Scan ලයින් එක */
         .panel::after {
             content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
             background: #ff0000; box-shadow: 0 0 15px #ff0000;
@@ -80,7 +76,6 @@
 
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
 
-        /* Blinking Red Dot */
         .status-dot { 
             height: 10px; width: 10px; background-color: #ff0000; 
             border-radius: 50%; display: inline-block; margin-right: 5px; 
@@ -121,7 +116,6 @@
             <div class="panel">
                 <h3 style="border-bottom: 1px solid #ff0000;">[ SYSTEM DATA STREAM ]</h3>
                 <div class="log-screen" id="logs">
-                    [INFO]: Booting Red-Dragon Kernel...<br>
                     [INFO]: Establishing handshake with Firebase...<br>
                     [SUCCESS]: System ready for commands.
                 </div>
@@ -135,7 +129,6 @@
     </div>
 
     <script>
-        // ඔයාගේ Firebase විස්තර ටික මෙතන තියෙනවා
         const firebaseConfig = {
             apiKey: "AIzaSyB4K6JgS_tn5rDLeA1i9-xqQ9rNZSE5ms8",
             authDomain: "dark-dragon-team.firebaseapp.com",
@@ -150,7 +143,6 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // ඇතුළු වීමේ ක්‍රියාවලිය
         function login() {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
@@ -159,28 +151,35 @@
                     document.getElementById('auth-container').style.display = 'none';
                     document.getElementById('dashboard').style.display = 'block';
                     addLog("Admin verified. Accessing main servers...");
+                    listenForData();
                 })
-                .catch(err => alert("ACCESS DENIED: Check your key!"));
+                .catch(err => alert("ACCESS DENIED!"));
         }
 
-        // ෆෝන් එකට අණක් යැවීම
+        // මෙතන තමයි වෙනස කළේ - App එකට කෙලින්ම කියවන්න පුළුවන් වෙන්න
         function sendCommand(action) {
-            db.ref('commands').set({
-                action: action,
-                timestamp: Date.now()
-            }).then(() => {
+            db.ref('commands').set(action) 
+            .then(() => {
                 addLog("Command Sent -> " + action.toUpperCase());
             });
         }
 
-        // ලොග් එකතු කිරීම
+        function listenForData() {
+            db.ref('device_data').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    document.getElementById('data-preview').innerText = data;
+                    addLog("Payload Received: " + data);
+                }
+            });
+        }
+
         function addLog(msg) {
             const logBox = document.getElementById('logs');
             logBox.innerHTML += `<br>[${new Date().toLocaleTimeString()}]: ${msg}`;
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // එළියට යාම
         function logout() { auth.signOut().then(() => location.reload()); }
     </script>
 </body>
