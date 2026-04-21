@@ -2,71 +2,148 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | SECURE LOGIN</title>
+    <title>DARK DRAGON | RED PROTOCOL TERMINAL</title>
     <style>
-        :root { --neon: #0f0; --bg: #050505; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        :root { --neon-red: #ff0000; --dark-red: #440000; --bg: #050000; }
+        body { background: var(--bg); color: var(--neon-red); font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
         
+        /* Scanline Effect */
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(255, 0, 0, 0.01), rgba(255, 0, 0, 0.03));
+            z-index: 9999; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
         /* Login Box */
-        #login-box { border: 2px solid var(--neon); padding: 30px; box-shadow: 0 0 20px var(--neon); text-align: center; }
-        input { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; margin: 10px 0; width: 250px; outline: none; }
-        button { background: var(--neon); color: #000; border: none; padding: 10px 25px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #login-box { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 2px solid var(--neon-red); padding: 40px; 
+            box-shadow: 0 0 30px var(--dark-red); text-align: center; background: black; z-index: 10000;
+        }
+        input { background: #110000; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 12px; margin: 10px 0; width: 280px; outline: none; }
+        button { background: var(--neon-red); color: #000; border: none; padding: 10px 30px; font-weight: bold; cursor: pointer; margin-top: 15px; text-transform: uppercase; }
+        button:hover { background: white; box-shadow: 0 0 20px white; }
+
+        /* Dashboard */
+        #dashboard { display: none; }
+        header { border-bottom: 2px solid var(--neon-red); padding: 15px; text-align: center; background: #110000; box-shadow: 0 0 15px var(--dark-red); }
         
-        /* Hidden Dashboard */
-        #dashboard { display: none; width: 100%; height: 100vh; position: absolute; top: 0; left: 0; background: var(--bg); }
-        
-        /* Tab Styles (Previous code styles included below) */
-        header { border-bottom: 2px solid var(--neon); padding: 15px; text-align: center; }
-        .tabs { display: flex; background: #111; border-bottom: 1px solid var(--neon); }
-        .tab { padding: 15px 20px; cursor: pointer; border-right: 1px solid #222; }
-        .tab:hover, .tab.active { background: var(--neon); color: #000; }
-        .panel { display: none; padding: 20px; }
+        /* Tabs Control */
+        .tabs { display: flex; flex-wrap: wrap; background: #0a0000; border-bottom: 1px solid var(--neon-red); }
+        .tab { padding: 15px 18px; cursor: pointer; border-right: 1px solid var(--dark-red); flex: 1; text-align: center; font-size: 12px; transition: 0.3s; }
+        .tab:hover, .tab.active { background: var(--neon-red); color: #000; font-weight: bold; box-shadow: inset 0 0 10px #000; }
+
+        .container { padding: 25px; }
+        .panel { display: none; border: 1px solid var(--dark-red); padding: 25px; background: rgba(20, 0, 0, 0.5); min-height: 400px; animation: glitch 0.3s; }
         .panel.active { display: block; }
-        .data-card { border-left: 3px solid var(--neon); background: #0a0a0a; padding: 10px; margin-bottom: 10px; }
+
+        @keyframes glitch {
+            0% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Radar UI */
+        .radar-circle {
+            width: 200px; height: 200px; border: 2px solid var(--neon-red); border-radius: 50%;
+            margin: 20px auto; position: relative; overflow: hidden; background: repeating-radial-gradient(circle, transparent, transparent 20px, rgba(255,0,0,0.1) 21px);
+        }
+        .radar-sweep {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent 50%, rgba(255,0,0,0.4) 50%);
+            animation: sweep 4s linear infinite; transform-origin: center;
+        }
+        @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .data-card { border-left: 4px solid var(--neon-red); background: #150000; padding: 15px; margin-bottom: 15px; font-size: 14px; }
+        .status-red { color: #ff0000; font-weight: bold; animation: blink 0.8s infinite; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.2;} 100% {opacity: 1;} }
     </style>
 </head>
 <body>
 
 <div id="login-box">
-    <h2 style="text-shadow: 0 0 10px var(--neon);">SYSTEM ACCESS CONTROL</h2>
-    <p>MASTER ENCRYPTION ACTIVE</p>
-    <input type="email" id="admin-email" placeholder="ADMIN EMAIL" required><br>
-    <input type="password" id="admin-password" placeholder="MASTER CODE" required><br>
-    <button onclick="checkAccess()">UNLOCK TERMINAL</button>
-    <p id="error-msg" style="color: red; font-size: 12px; margin-top: 10px;"></p>
+    <h1 style="margin:0; font-size: 24px; text-shadow: 0 0 15px red;">DRAGON SYSTEM LOCK</h1>
+    <p style="font-size: 10px; letter-spacing: 2px;">RED PROTOCOL - LEVEL 9 ACCESS</p>
+    <input type="email" id="admin-email" placeholder="ADMIN EMAIL">
+    <input type="password" id="admin-password" placeholder="MASTER CODE">
+    <button onclick="checkAccess()">AUTH & UNLOCK</button>
+    <p id="error-msg" style="color: #ff5555; font-size: 11px; margin-top: 10px;"></p>
 </div>
 
 <div id="dashboard">
     <header>
-        <h1>DRAGON GHOST PROTOCOL - MASTER TERMINAL</h1>
-        <p>LOGGED IN AS: <span id="user-display"></span> | <button onclick="logout()" style="padding: 2px 10px; font-size: 10px;">LOGOUT</button></p>
+        <h2 style="margin:0;">[ DARK DRAGON - COMMAND & CONTROL ]</h2>
+        <p style="font-size: 12px;">OPERATOR: <span id="user-display"></span> | STATUS: <span class="status-red">HOSTILE BYPASS ACTIVE</span></p>
     </header>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
         <div class="tab" onclick="showTab(event, 'device')">📱 DEVICE</div>
-        <div class="tab" onclick="showTab(event, 'comms')">💬 COMMS</div>
+        <div class="tab" onclick="showTab(event, 'comms')">💬 MESSAGES</div>
+        <div class="tab" onclick="showTab(event, 'calls')">📞 CALLS</div>
         <div class="tab" onclick="showTab(event, 'media')">📂 MEDIA</div>
+        <div class="tab" onclick="showTab(event, 'email')">📧 EMAILS</div>
+        <div class="tab" onclick="showTab(event, 'network')">🌐 NETWORK</div>
+        <div class="tab" onclick="showTab(event, 'ghost')">🛡️ GHOST</div>
     </div>
 
-    <div class="container" style="padding: 20px;">
+    <div class="container">
         <div id="radar" class="panel active">
-            <h2>LIVE TARGET TRACKING</h2>
-            <div class="data-card">[ WAITING FOR INCOMING DATA... ]</div>
+            <h2>TARGET GEOLOCATION RADAR</h2>
+            <div class="radar-circle"><div class="radar-sweep"></div></div>
+            <div class="data-card" id="radar-data">[ SCANNING FOR INCOMING TARGETS... ]</div>
         </div>
+
         <div id="device" class="panel">
-            <h2>DEVICE INTEL</h2>
-            <div class="data-card">FETCHING HARDWARE SPECS...</div>
+            <h2>DEVICE SYSTEM EXPLOIT</h2>
+            <div class="data-card">
+                <p>⚡ Battery: <span id="bat">FETCHING...</span></p>
+                <p>🛠️ Platform: <span id="plat">UNKNOWN</span></p>
+                <button onclick="alert('Accessing Cam...')">📸 LIVE CAMERA STREAM</button>
+                <button onclick="alert('Accessing Mic...')">🎤 LISTEN LIVE</button>
+            </div>
         </div>
-        <div id="comms" class="panel"><h2>INTERCEPTED MESSAGES</h2></div>
-        <div id="media" class="panel"><h2>GALLERY & FILES</h2></div>
+
+        <div id="comms" class="panel">
+            <h2>INTERCEPTED CHATS (WA/FB/TG)</h2>
+            <div class="data-card">[ NO RECENT MESSAGES INTERCEPTED ]</div>
+        </div>
+
+        <div id="calls" class="panel">
+            <h2>CALL LOGS & FORWARDING</h2>
+            <div class="data-card">[ LOGGING INCOMING/OUTGOING CALLS... ]</div>
+        </div>
+
+        <div id="media" class="panel">
+            <h2>FILE MANAGER & GALLERY ACCESS</h2>
+            <button>🔽 DOWNLOAD ALL PHOTOS (DCIM)</button>
+            <div class="data-card" style="margin-top:10px;">Scanning File System...</div>
+        </div>
+
+        <div id="email" class="panel">
+            <h2>EMAIL HARVESTER (GMAIL/OUTLOOK)</h2>
+            <div class="data-card">Waiting for Token Bypass...</div>
+        </div>
+
+        <div id="network" class="panel">
+            <h2>WIFI & HOTSPOT SNIFFER</h2>
+            <div class="data-card">Monitoring Local Traffic...</div>
+        </div>
+
+        <div id="ghost" class="panel">
+            <h2>GHOST PROTOCOL SETTINGS</h2>
+            <p>Current Security Level: <b>MAXIMUM</b></p>
+            <button onclick="location.reload()">🔒 LOCK TERMINAL</button>
+            <button>🔄 ROTATE PROXY IP</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // මචං, මෙතනට ඔයාට කැමති Email එකයි Password එකයි දාන්න.
     const MASTER_EMAIL = "kaviakiya@gmail.com";
-    const MASTER_CODE = "Akindu@Dewshan20241118"; // මේක තමයි ඔයාගේ Password එක
+    const MASTER_CODE = "Akindu@Dewshan20241118";
 
     function checkAccess() {
         const email = document.getElementById('admin-email').value;
@@ -76,10 +153,9 @@
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('user-display').innerText = email;
-            // Background එක Fix කරන්න
-            document.body.style.display = 'block';
+            triggerFakeData();
         } else {
-            document.getElementById('error-msg').innerText = "ACCESS DENIED: INVALID CREDENTIALS";
+            document.getElementById('error-msg').innerText = "ACCESS DENIED: CONTACT MASTER ADMIN";
         }
     }
 
@@ -90,8 +166,13 @@
         evt.currentTarget.classList.add('active');
     }
 
-    function logout() {
-        location.reload(); // සරලව Logout වෙන්න Page එක refresh කරනවා
+    function triggerFakeData() {
+        document.getElementById('plat').innerText = navigator.platform;
+        if(navigator.getBattery) {
+            navigator.getBattery().then(b => {
+                document.getElementById('bat').innerText = (b.level * 100) + "%";
+            });
+        }
     }
 </script>
 
