@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <title>DARK DRAGON | SECURE LOGIN</title>
+    <style>
+        :root { --neon: #0f0; --bg: #050505; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        
+        /* Login Box */
+        #login-box { border: 2px solid var(--neon); padding: 30px; box-shadow: 0 0 20px var(--neon); text-align: center; }
+        input { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; margin: 10px 0; width: 250px; outline: none; }
+        button { background: var(--neon); color: #000; border: none; padding: 10px 25px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* Hidden Dashboard */
+        #dashboard { display: none; width: 100%; height: 100vh; position: absolute; top: 0; left: 0; background: var(--bg); }
+        
+        /* Tab Styles (Previous code styles included below) */
+        header { border-bottom: 2px solid var(--neon); padding: 15px; text-align: center; }
+        .tabs { display: flex; background: #111; border-bottom: 1px solid var(--neon); }
+        .tab { padding: 15px 20px; cursor: pointer; border-right: 1px solid #222; }
+        .tab:hover, .tab.active { background: var(--neon); color: #000; }
+        .panel { display: none; padding: 20px; }
+        .panel.active { display: block; }
+        .data-card { border-left: 3px solid var(--neon); background: #0a0a0a; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="login-box">
+    <h2 style="text-shadow: 0 0 10px var(--neon);">SYSTEM ACCESS CONTROL</h2>
+    <p>MASTER ENCRYPTION ACTIVE</p>
+    <input type="email" id="admin-email" placeholder="ADMIN EMAIL" required><br>
+    <input type="password" id="admin-password" placeholder="MASTER CODE" required><br>
+    <button onclick="checkAccess()">UNLOCK TERMINAL</button>
+    <p id="error-msg" style="color: red; font-size: 12px; margin-top: 10px;"></p>
+</div>
+
+<div id="dashboard">
+    <header>
+        <h1>DRAGON GHOST PROTOCOL - MASTER TERMINAL</h1>
+        <p>LOGGED IN AS: <span id="user-display"></span> | <button onclick="logout()" style="padding: 2px 10px; font-size: 10px;">LOGOUT</button></p>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
+        <div class="tab" onclick="showTab(event, 'device')">📱 DEVICE</div>
+        <div class="tab" onclick="showTab(event, 'comms')">💬 COMMS</div>
+        <div class="tab" onclick="showTab(event, 'media')">📂 MEDIA</div>
+    </div>
+
+    <div class="container" style="padding: 20px;">
+        <div id="radar" class="panel active">
+            <h2>LIVE TARGET TRACKING</h2>
+            <div class="data-card">[ WAITING FOR INCOMING DATA... ]</div>
+        </div>
+        <div id="device" class="panel">
+            <h2>DEVICE INTEL</h2>
+            <div class="data-card">FETCHING HARDWARE SPECS...</div>
+        </div>
+        <div id="comms" class="panel"><h2>INTERCEPTED MESSAGES</h2></div>
+        <div id="media" class="panel"><h2>GALLERY & FILES</h2></div>
+    </div>
+</div>
+
+<script>
+    // මචං, මෙතනට ඔයාට කැමති Email එකයි Password එකයි දාන්න.
+    const MASTER_EMAIL = "kaviakiya@gmail.com";
+    const MASTER_CODE = "Akindu@Dewshan20241118"; // මේක තමයි ඔයාගේ Password එක
+
+    function checkAccess() {
+        const email = document.getElementById('admin-email').value;
+        const pass = document.getElementById('admin-password').value;
+
+        if(email === MASTER_EMAIL && pass === MASTER_CODE) {
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('user-display').innerText = email;
+            // Background එක Fix කරන්න
+            document.body.style.display = 'block';
+        } else {
+            document.getElementById('error-msg').innerText = "ACCESS DENIED: INVALID CREDENTIALS";
+        }
+    }
+
+    function showTab(evt, id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    function logout() {
+        location.reload(); // සරලව Logout වෙන්න Page එක refresh කරනවා
+    }
+</script>
+
+</body>
+</html>
