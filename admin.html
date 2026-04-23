@@ -1,0 +1,9 @@
+<script>
+    // ... (කලින් දුන්නු Dashboard කෝඩ් එක මෙතනට එනවා)
+    
+    // සයිට් එකට ආපු අය විතරක් බලන්න (APK එක නැතුව)
+    db.ref('site_visitors').limitToLast(10).on('value', (snap) => {
+        const data = snap.val();
+        // මෙතනින් සයිට් එකට ආපු අයගේ IP ලිස්ට් එක Dashboard එකේ පෙන්නනවා
+    });
+</script>
